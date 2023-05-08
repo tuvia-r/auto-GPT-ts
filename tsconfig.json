@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "useUnknownInCatchVariables": false,
+    "resolveJsonModule": true,
+    "outDir": "dist",
+    "sourceMap": true,
+    "strict": false,
+    "target": "es2017",
+    "types": [
+      "node"
+    ]
+  },
+  "compileOnSave": true,
+}
