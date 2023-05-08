@@ -6,19 +6,21 @@ my take of auto-GPT in typescript
 
 * More memory options
 * Text to speech
-* Plugins
+* Plugins support
+* Add commands
 * Add a general tokenizer
 * Improve user interface
-* fix camel case naming
+* Fix camel case naming
 
 # How to run:
 
 * install node
 * first create a .env file
-* run:
+* instal tha package :
 ```sh
 $ npm i
 ```
+* start the program:
 ```sh
 $ npm run dev
 ```
