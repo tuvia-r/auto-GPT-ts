@@ -1,34 +1,26 @@
 import "reflect-metadata";
+import { Singleton } from "../singelton";
 
 const AUTO_GPT_COMMAND_IDENTIFIER = "auto_gpt_command";
 
 export class Command {
-  name: string;
-  description: string;
-  method: CallableFunction;
   signature: string;
-  enabled: boolean;
-  disabled_reason: string | null;
 
   constructor(
-    name: string,
-    description: string,
-    method: CallableFunction,
+    public name: string,
+    public description: string,
+    public method: CallableFunction,
     signature: string = "",
-    enabled: boolean = true,
-    disabled_reason: string | null = null
+    public enabled: boolean = true,
+    public aliases: string[] = [],
+    public disabledReason: string | null = null
   ) {
-    this.name = name;
-    this.description = description;
-    this.method = method;
     this.signature = signature || this.method.toString();
-    this.enabled = enabled;
-    this.disabled_reason = disabled_reason;
   }
 
   call(...args: any[]): any {
     if (!this.enabled) {
-      return `Command '${this.name}' is disabled: ${this.disabled_reason}`;
+      return `Command '${this.name}' is disabled: ${this.disabledReason}`;
     }
     return this.method(...args);
   }
@@ -38,44 +30,32 @@ export class Command {
   }
 }
 
-const allCommands: Command[] = [];
-
+@Singleton
 export class CommandRegistry {
   commands: { [name: string]: Command } = {};
 
-  _import_module(module_name: string) {
-    return import(module_name);
-  }
-
-  _reload_module(module: any) {
-    return module;
+  getAllCommands() {
+    return Object.values(this.commands);
   }
 
   register(cmd: Command) {
     this.commands[cmd.name] = cmd;
   }
 
-  unregister(command_name: string) {
-    if (command_name in this.commands) {
-      delete this.commands[command_name];
+  unregister(commandName: string) {
+    if (commandName in this.commands) {
+      delete this.commands[commandName];
     } else {
-      throw new Error(`Command '${command_name}' not found in registry.`);
+      throw new Error(`Command '${commandName}' not found in registry.`);
     }
   }
 
-  // reload_commands() {
-  //   for (let cmd_name in this.commands) {
-  //     let cmd = this.commands[cmd_name];
-  //     let module = this._import_module(cmd.method.prototype.constructor.name);
-  //     let reloaded_module = this._reload_module(module);
-  //     if (reloaded_module.register) {
-  //       reloaded_module.register(this);
-  //     }
-  //   }
-  // }
-
-  get_command(name: string) {
-    return this.commands[name];
+  getCommand(name: string) {
+    let command = this.commands[name];
+    if(!command){
+      command = Object.values(this.commands).find(cmd => cmd.aliases.includes(name));
+    }
+    return command;
   }
 
   call(command_name: string, ...args: any[]) {
@@ -86,15 +66,15 @@ export class CommandRegistry {
     return command.call(...args);
   }
 
-  command_prompt() {
-    let commands_list: string[] = [];
+  commandPrompt() {
+    let commandsList: string[] = [];
     for (let [idx, cmd] of Object.entries(this.commands)) {
-      commands_list.push(`${parseInt(idx) + 1}. ${cmd.toString()}`);
+      commandsList.push(`${parseInt(idx) + 1}. ${cmd.toString()}`);
     }
-    return commands_list.join("\n");
+    return commandsList.join("\n");
   }
 
-  async import_commands(module_name: string) {
+  async importCommands(module_name: string) {
     const path = require.resolve(module_name)
     // console.log(`Importing commands from ${path}`);
     let module = await import(path);
@@ -109,8 +89,8 @@ export class CommandRegistry {
         attr.prototype instanceof Command &&
         attr !== Command
       ) {
-        let cmd_instance = new attr();
-        this.register(cmd_instance);
+        let cmdInstance = new attr();
+        this.register(cmdInstance);
       }
     }
   }
@@ -122,12 +102,16 @@ export const CommandDecorator = (<N extends string, T extends { new (...args: an
   signature,
   enabled,
   disabledReason,
+  register,
+  aliases
 }: {
   name: keyof T & N & string;
   description: string;
   signature?: string;
   enabled?: boolean;
   disabledReason?: string;
+  register?: boolean;
+  aliases?: string[];
 })  =>  (
     target: T, _?:any
   ) => {
@@ -141,6 +125,7 @@ export const CommandDecorator = (<N extends string, T extends { new (...args: an
       func,
       signature ?? func.toString(),
       enabled ?? true,
+      aliases ?? [],
       disabledReason ?? null
     );
 
@@ -148,7 +133,9 @@ export const CommandDecorator = (<N extends string, T extends { new (...args: an
     // target[AUTO_GPT_COMMAND_IDENTIFIER] = true;
     Reflect.defineMetadata(AUTO_GPT_COMMAND_IDENTIFIER, true, target);
 
-    allCommands.push(cmd);
+    if(register){
+      new CommandRegistry().register(cmd);
+    }
 
     return target as T & any;
   })

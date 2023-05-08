@@ -1,33 +1,5 @@
 import { URL } from "url";
 
-export function validateUrl(func: (url: string, ...args: any[]) => any): (...args: any[]) => any {
-  /**
-   * The method decorator validateUrl is used to validate urls for any command that requires
-   * a url as an argument
-   */
-  return function (url: string, ...args: any[]): any {
-    /**
-     * Check if the URL is valid using a basic check, URL check, and local file check
-     * @param {string} url - The URL to check
-     * @returns {any} the result of the wrapped function
-     * @throws {Error} if the URL fails any of the validation tests
-     */
-    // Most basic check if the URL is valid:
-    if (!url.startsWith("http://") && !url.startsWith("https://")) {
-      throw new Error("Invalid URL format");
-    }
-    if (!isValidUrl(url)) {
-      throw new Error("Missing Scheme or Network location");
-    }
-    // Restrict access to local files
-    if (checkLocalFileAccess(url)) {
-      throw new Error("Access to local files is restricted");
-    }
-
-    return func(sanitizeUrl(url), ...args);
-  };
-}
-
 export function isValidUrl(url: string): boolean {
   /**
    * Check if the URL is valid
@@ -36,7 +8,7 @@ export function isValidUrl(url: string): boolean {
    */
   try {
     const { protocol, host } = new URL(url);
-    return Boolean(protocol && host);
+    return !!(protocol && host);
   } catch (e) {
     return false;
   }

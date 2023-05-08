@@ -4,6 +4,7 @@ import { parse } from 'node-html-parser';
 import { summarizeText } from "../processing/text";
 import { extractHyperlinks } from "../processing/html";
 import * as fs from 'fs';
+import { isValidUrl, sanitizeUrl } from "../url-utils/validators";
 
 
 
@@ -14,13 +15,43 @@ import * as fs from 'fs';
 })
 export class BrowseWebsiteCommand {
     static async browseWebsite(url: string, question: string) {
-      if(!url.startsWith('http')) {
+      if(!isValidUrl('http')) {
         return `Error: Please provide a valid url.`
       }
-        const { text, links } = await scrapeText(url, question);
+        const { text, links } = await scrapeText(sanitizeUrl(url), question);
         return `Answer gathered from website: ${text} \n \n Links: ${links}`
 
     }
+}
+
+@CommandDecorator({
+  name: "getTextSummary",
+  description: "Get a summary of the text",
+  signature: '"url": string, "question": string',
+})
+export class GetTextSummary {
+  static async getTextSummary(url: string, question: string) {
+    if (!isValidUrl("http")) {
+      return `Error: URL is not valid`;
+    }
+    const { text } = await scrapeText(sanitizeUrl(url), question);
+    return `"" "Result" : ${text}""`;
+  }
+}
+
+@CommandDecorator({
+  name: "getHyperlinks",
+  description: "Get a list of hyperlinks from a webpage",
+  signature: '"url": string',
+})
+export class GetHyperlinks {
+  static async getHyperlinks(url: string) {
+    if (!isValidUrl("http")) {
+      return `Error: URL is not valid`;
+    }
+    const { links } = await scrapeText(sanitizeUrl(url), "");
+    return `"" "Result" : ${links}""`;
+  }
 }
 
 

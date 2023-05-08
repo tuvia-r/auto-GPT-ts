@@ -11,16 +11,17 @@ export class AgentManager {
 
   // Create new GPT agent
   // TODO: Centralise use of create_chat_completion() to globally enforce token limit
-  public async createAgent(task: string, prompt: string, model: string): Promise<[number, string]> {
-    const messages: Message[] = [{ role: 'user', content: prompt }];
+  public async createAgent(
+    task: string,
+    prompt: string,
+    model: string
+  ): Promise<[number, string]> {
+    const messages: Message[] = [{ role: "user", content: prompt }];
 
     // Start GPT instance
-    let agentReply = await createChatCompletion(
-         messages,
-      model,
-    );
+    let agentReply = await createChatCompletion(messages, model);
 
-    messages.push({ role: 'assistant', content: agentReply });
+    messages.push({ role: "assistant", content: agentReply });
 
     const key = this.nextKey;
     this.nextKey += 1;
@@ -30,19 +31,19 @@ export class AgentManager {
     return [key, agentReply];
   }
 
-  public async  messageAgent(key: string | number, message: string): Promise<string> {
+  public async messageAgent(
+    key: string | number,
+    message: string
+  ): Promise<string> {
     const [_, messages, model] = this.agents[Number(key)];
 
     // Add user message to message history before sending to agent
-    messages.push({ role: 'user', content: message });
+    messages.push({ role: "user", content: message });
 
     // Start GPT instance
-    let agentReply = await createChatCompletion(
-        messages,
-      model,
-    );
+    let agentReply = await createChatCompletion(messages, model);
 
-    messages.push({ role: 'assistant', content: agentReply });
+    messages.push({ role: "assistant", content: agentReply });
 
     return agentReply;
   }
@@ -60,5 +61,3 @@ export class AgentManager {
     }
   }
 }
-
-    

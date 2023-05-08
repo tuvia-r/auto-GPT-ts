@@ -1,7 +1,7 @@
 import { NodeVM } from "vm2";
 import { Config } from "../config/config";
 import { CommandDecorator } from "./command";
-import { execSync, spawn, spawnSync } from "child_process";
+import { spawn } from "child_process";
 import * as ts from "typescript";
 import { getLogger } from "../logging";
 import * as path from "path";
@@ -12,7 +12,7 @@ const CFG = new Config();
 const jsVm = new NodeVM({
   require: {
     external: true,
-    root: CFG.workspace_path,
+    root: CFG.workspacePath,
   },
   console: "inherit",
 });
@@ -73,20 +73,20 @@ let lastWorkingDir: string;
   name: "executeShellCommandLine",
   description: "Execute Shell Command, non-interactive commands only",
   signature: '"commandLine": "<command_line>"',
-  enabled: CFG.execute_local_commands,
+  enabled: CFG.executeLocalCommands,
   disabledReason: `You are not allowed to run local shell commands. To execute shell commands, EXECUTE_LOCAL_COMMANDS must be set to 'True' in your config. Do not attempt to bypass the restriction.`,
 })
 export class ExecuteShell {
   static logger = getLogger("ExecuteShell");
   static async executeShellCommandLine(commandLine: string) {
     if (!lastWorkingDir) {
-      lastWorkingDir = CFG.workspace_path;
+      lastWorkingDir = CFG.workspacePath;
     }
 
     let workingDir = lastWorkingDir;
 
-    if (!path.relative(workingDir, CFG.workspace_path).startsWith("..")) {
-      workingDir = CFG.workspace_path;
+    if (!path.relative(workingDir, CFG.workspacePath).startsWith("..")) {
+      workingDir = CFG.workspacePath;
     }
 
     this.logger.info(

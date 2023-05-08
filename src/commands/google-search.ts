@@ -6,7 +6,8 @@ import { CommandDecorator } from './command';
 @CommandDecorator({
     name: 'googleSearch',
     description: 'Google Search',
-    signature: '"query": string, "maxResults": number'
+    signature: '"query": string, "maxResults": number',
+    aliases: ['google', 'search']
 })
 export class GoogleSearchCommand {
     static async googleSearch(query: string, maxResults: number) {

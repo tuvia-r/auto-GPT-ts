@@ -1,62 +1,25 @@
-import { Config } from "./config/config";
 import * as prompt from 'prompt'
 import * as yaml from 'js-yaml';
 import chalk from 'chalk';
 import * as fs from 'fs';
 import { simpleGit } from "simple-git";
+import { getLogger } from "./logging";
+
+const logger = getLogger();
 
 
 export async function cleanInput(promptString: string = '', talk: boolean = false): Promise<string> {
   try {
-    const cfg = new Config();
-    if (cfg.chat_messages_enabled) {
-      for (const plugin of cfg.plugins) {
-        if (!plugin.can_handle_user_input) {
-          continue;
-        }
-        if (!plugin.can_handle_user_input(promptString)) {
-          continue;
-        }
-        const plugin_response = plugin.user_input(promptString);
-        if (!plugin_response) {
-          continue;
-        }
-        if (
-          [
-            'yes',
-            'yeah',
-            'y',
-            'ok',
-            'okay',
-            'sure',
-            'alright',
-          ].includes(plugin_response.toLowerCase())
-        ) {
-          return cfg.authorise_key;
-        } else if (
-          [
-            'no',
-            'nope',
-            'n',
-            'negative',
-          ].includes(plugin_response.toLowerCase())
-        ) {
-          return cfg.exit_key;
-        }
-        return plugin_response;
-      }
-    }
-
     // ask for input, default when just pressing Enter is y
-    console.info('Asking user via keyboard...');
+    logger.debug('Asking user via keyboard...');
     prompt.start();
     const answer = await prompt.get([promptString]);
     // prompt.stop();
     return (<string>answer[promptString])?.trim() ?? '';
   } catch (error) {
-    console.error(error);
-    console.info('You interrupted Auto-GPT');
-    console.info('Quitting...');
+    logger.error(error);
+    logger.info('You interrupted Auto-GPT');
+    logger.info('Quitting...');
     process.exit(0);
   }
 }

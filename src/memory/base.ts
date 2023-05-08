@@ -2,7 +2,8 @@
 /**
  * Abstract class for memory providers
  */
-export abstract class MemoryProviderSingleton {
+export abstract class MemoryProvider {
+    static memoryName: string
     /**
      * Adds data to memory
      * @param data - The data to add to memory

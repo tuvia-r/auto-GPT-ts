@@ -14,8 +14,8 @@ const CFG = new Config();
 
 export function* splitText(
     text: string,
-    max_length: number = CFG.browse_chunk_max_length,
-    model: string = CFG.fast_llm_model,
+    max_length: number = CFG.browseChunkMaxLength,
+    model: string = CFG.fastLlmModel,
     question: string = ""
   ): Generator<string, void, unknown> {
     const sentences = split(text).filter(s => s.type === 'Sentence').map(s => (s.raw as string).trim())
@@ -65,13 +65,13 @@ export async function summarizeText(
         return "Error: No text to summarize";
     }
 
-    const model = CFG.fast_llm_model;
+    const model = CFG.fastLlmModel;
     const textLength = text.length;
     logger.info(`Text length: ${textLength} characters`);
 
     const summaries: string[] = [];
     const chunks = Array.from(
-        splitText(text, CFG.browse_chunk_max_length, model, question)
+        splitText(text, CFG.browseChunkMaxLength, model, question)
     ).slice(0, 10);
     const scrollRatio = 1 / chunks.length;
 
@@ -84,7 +84,7 @@ export async function summarizeText(
 
         const memoryToAdd = `Source: ${url}\nRaw content part#${i + 1}: ${chunk}`;
 
-        const memory = getMemory(new Config());
+        const memory = getMemory();
         memory.add(memoryToAdd);
 
         const messages = [createMessage(chunk, question)];

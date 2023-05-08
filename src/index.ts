@@ -1,4 +1,13 @@
-import * as dotenv from 'dotenv' // see https://github.com/motdotla/dotenv#how-do-i-use-dotenv-with-import
-dotenv.config({path: require.resolve('../.env')})
+export * from './agent';
+export * from './commands';
+export * from './logging';
+export * from './memory';
+export * from './prompt';
+export * from './spinner';
+export * from './singelton';
+export * from './setup';
+export * from './configurator';
+export * from './config';
+export * from './utils';
+export * from './json-utils';
 
-import './cli';

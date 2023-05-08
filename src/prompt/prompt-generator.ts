@@ -1,4 +1,4 @@
-import { PromptGenerator } from "./prompt";
+import { PromptGenerator } from "./prompt-base";
 
 export const responseFormat = {
     thoughts: {
@@ -17,9 +17,7 @@ export const DEFAULT_TRIGGERING_PROMPT = `Determine which next command to use, a
  * This function generates a prompt string that includes various constraints,
  * commands, resources, and performance evaluations.
  */
-export const buildDefaultPromptGenerator = () => {
-  // Initialize the PromptGenerator object
-  const promptGenerator = new PromptGenerator();
+export const buildDefaultPromptGenerator = (promptGenerator = new PromptGenerator()) => {
 
   // Add constraints to the PromptGenerator object
   promptGenerator.addConstraint(
@@ -55,11 +53,6 @@ export const buildDefaultPromptGenerator = () => {
     `Exclusively use the commands listed in double quotes e.g. "command name"`
   );
 
-  // Define the commands
-
-  promptGenerator.addCommand("Task Complete (Shutdown)", "task_complete", {
-    reason: "<reason>",
-  });
 
   // Add resources to the PromptGenerator object
 

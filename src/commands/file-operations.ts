@@ -151,6 +151,7 @@ export class ReadFile {
   name: "writeToFile",
   description: "Write to File",
   signature: '"filename": string, "text": string',
+  aliases: ["writeFile", 'createFile'],
 })
 export class WriteToFile {
   static writeToFile(filename: string, text: string): string {

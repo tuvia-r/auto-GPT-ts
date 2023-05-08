@@ -49,14 +49,14 @@ export class Workspace extends Loggable {
 
     if (resolvedRoot && path.isAbsolute(resolvedPath)) {
         return path.join(resolvedRoot, relativePath);
-      throw new Error(`Attempted to access absolute path '${resolvedPath}' in workspace '${resolvedRoot}'.`);
+      // throw new Error(`Attempted to access absolute path '${resolvedPath}' in workspace '${resolvedRoot}'.`);
     }
 
     let fullPath = path.resolve(resolvedRoot ?? "", resolvedPath);
 
     if (restrictToRoot && !fullPath.startsWith(resolvedRoot ?? "")) {
         return path.join(resolvedRoot, relativePath);
-      throw new Error(`Attempted to access path '${fullPath}' outside of workspace '${resolvedRoot}'.`);
+      // throw new Error(`Attempted to access path '${fullPath}' outside of workspace '${resolvedRoot}'.`);
     }
 
     return fullPath;

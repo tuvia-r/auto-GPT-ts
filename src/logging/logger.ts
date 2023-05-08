@@ -10,8 +10,36 @@ export interface ILogger {
   debug: LogFunction;
 }
 
+export enum LogLevel {
+    INFO = "info",
+    WARN = "warn",
+    ERROR = "error",
+    DEBUG = "debug",
+    SILENT = "silent",
+}
+
+export const noop = () => {};
+
 export class Logger implements ILogger {
   static noDebug = false;
+  static logLevel = LogLevel.INFO;
+
+  static logLevelToNumber (logLevel: LogLevel): number {
+    switch (logLevel) {
+        case LogLevel.DEBUG:
+            return 0;
+        case LogLevel.INFO:
+            return 1;
+        case LogLevel.WARN:
+            return 2;
+        case LogLevel.ERROR:
+            return 3;
+        case LogLevel.SILENT:
+            return 4;
+        default:
+            return 3;
+    }
+}
   private prefixes: string[];
   private logFrefixString: string;
   constructor(private logger: ILogger, ...prefixes: string[]) {
@@ -53,20 +81,30 @@ export class Logger implements ILogger {
   }
 
   get info() {
+    if(Logger.logLevelToNumber(Logger.logLevel) > Logger.logLevelToNumber(LogLevel.INFO)) {
+        return noop;
+    }
+    
     return this.createLogFunction(this.logger.info);
   }
 
   get warn() {
+    if(Logger.logLevelToNumber(Logger.logLevel) > Logger.logLevelToNumber(LogLevel.WARN)) {
+        return noop;
+    }
     return this.createLogFunction(this.logger.warn);
   }
 
   get error() {
+    if(Logger.logLevelToNumber(Logger.logLevel) > Logger.logLevelToNumber(LogLevel.ERROR)) {
+        return noop;
+    }
     return this.createLogFunction(this.logger.error);
   }
 
   get debug() {
-    if (Logger.noDebug) {
-      return () => {};
+    if(Logger.logLevelToNumber(Logger.logLevel) > Logger.logLevelToNumber(LogLevel.DEBUG)) {
+        return noop;
     }
     return this.createLogFunction(this.logger.debug);
   }
