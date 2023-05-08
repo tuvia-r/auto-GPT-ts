@@ -26,4 +26,10 @@ $ npm i
 $ npm run start
 ```
 
+## Install
+
+```sh
+$ npm i auto-gpt-ts
+```
+
 
