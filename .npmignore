@@ -134,3 +134,5 @@ out
 logs/
 auto_gpt_workspace/
 ai_settings.yaml
+
+src

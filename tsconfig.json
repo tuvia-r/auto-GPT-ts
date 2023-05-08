@@ -6,6 +6,7 @@
     "useUnknownInCatchVariables": false,
     "resolveJsonModule": true,
     "esModuleInterop": true,
+    "declaration": true,
     "outDir": "dist",
     "sourceMap": true,
     "strict": false,
