@@ -28,26 +28,26 @@ const CFG = new Config();
 const logger = getLogger('json-utils')
 
 
-async function autoFixJson(json_string: string, schema: string): Promise<string> {
+async function autoFixJson(jsonString: string, schema: string): Promise<string> {
     // Try to fix the JSON using GPT:
-    const function_string = "def fix_json(json_string: str, schema:str=None) -> str:";
-    const args = [JSON.stringify(json_string), JSON.stringify(schema)];
-    const description_string = "This function takes a JSON string and ensures that it is parseable and fully compliant with the provided schema. If an object or field specified in the schema isn't contained within the correct JSON, it is omitted. The function also escapes any double quotes within JSON string values to ensure that they are valid. If the JSON string contains any None or NaN values, they are replaced with null before being parsed.";
+    const functionString = "def fix_json(json_string: str, schema:str=None) -> str:";
+    const args = [JSON.stringify(jsonString), JSON.stringify(schema)];
+    const descriptionString = "This function takes a JSON string and ensures that it is parseable and fully compliant with the provided schema. If an object or field specified in the schema isn't contained within the correct JSON, it is omitted. The function also escapes any double quotes within JSON string values to ensure that they are valid. If the JSON string contains any None or NaN values, they are replaced with null before being parsed.";
 
     // If it doesn't already start with a "`", add one:
-    if (!json_string.startsWith("`")) {
-        json_string = "```json\n" + json_string + "\n```";
+    if (!jsonString.startsWith("`")) {
+        jsonString = "```json\n" + jsonString + "\n```";
     }
-    const result_string = await callAiFunction(function_string, args, description_string, CFG.fast_llm_model);
+    const resultString = await callAiFunction(functionString, args, descriptionString, CFG.fastLlmModel);
     logger.debug("------------ JSON FIX ATTEMPT ---------------");
-    logger.debug(`Original JSON: ${json_string}`);
+    logger.debug(`Original JSON: ${jsonString}`);
     logger.debug("-----------");
-    logger.debug(`Fixed JSON: ${result_string}`);
+    logger.debug(`Fixed JSON: ${resultString}`);
     logger.debug("----------- END OF FIX ATTEMPT ----------------");
 
     try {
-        JSON.parse(result_string);  // just check the validity
-        return result_string;
+        JSON.parse(resultString);  // just check the validity
+        return resultString;
     } catch (e) {
         // Get the call stack:
         // const call_stack = e.stack;
@@ -57,71 +57,71 @@ async function autoFixJson(json_string: string, schema: string): Promise<string>
 }
 
 
-export function fix_json_using_multiple_techniques(assistant_reply: string): Record<string, any> {
-    assistant_reply = assistant_reply.trim();
-    if (assistant_reply.startsWith("```json")) {
-      assistant_reply = assistant_reply.slice(7);
+export function fixJsonUsingMultipleTechniques(assistantReply: string): Record<string, any> {
+    assistantReply = assistantReply.trim();
+    if (assistantReply.startsWith("```json")) {
+      assistantReply = assistantReply.slice(7);
     }
-    if (assistant_reply.endsWith("```")) {
-      assistant_reply = assistant_reply.slice(0, -3);
+    if (assistantReply.endsWith("```")) {
+      assistantReply = assistantReply.slice(0, -3);
     }
   
     try {
-      return JSON.parse(assistant_reply);
+      return JSON.parse(assistantReply);
     } catch (error) {
       // pass
     }
   
-    if (assistant_reply.startsWith("json ")) {
-      assistant_reply = assistant_reply.slice(5).trim();
+    if (assistantReply.startsWith("json ")) {
+      assistantReply = assistantReply.slice(5).trim();
     }
   
     try {
-      return JSON.parse(assistant_reply);
+      return JSON.parse(assistantReply);
     } catch (error) {
       // pass
     }
   
     // Parse and print Assistant response
-    let assistant_reply_json = fix_and_parse_json(assistant_reply);
-    logger.debug("Assistant reply JSON:", assistant_reply_json);
-    if (assistant_reply_json == null || Object.keys(assistant_reply_json).length === 0) {
-      assistant_reply_json = attempt_to_fix_json_by_finding_outermost_brackets(assistant_reply);
+    let assistantReplyJson = fixAndParseJson(assistantReply);
+    logger.debug("Assistant reply JSON:", assistantReplyJson);
+    if (assistantReplyJson == null || Object.keys(assistantReplyJson).length === 0) {
+      assistantReplyJson = attempt_to_fix_json_by_finding_outermost_brackets(assistantReply);
     }
   
-    logger.debug("Assistant reply JSON 2:", assistant_reply_json);
-    if (assistant_reply_json != null && Object.keys(assistant_reply_json).length > 0) {
-      return assistant_reply_json;
+    logger.debug("Assistant reply JSON 2:", assistantReplyJson);
+    if (assistantReplyJson != null && Object.keys(assistantReplyJson).length > 0) {
+      return assistantReplyJson;
     }
   
     console.error(
-      "Error: The following AI output couldn't be converted to a JSON:\n", assistant_reply
+      "Error: The following AI output couldn't be converted to a JSON:\n", assistantReply
     );
   
     return {};
   }
   
 
-  function fix_and_parse_json(json_to_load: string, try_to_fix_with_gpt: boolean = true): Record<string, any> {
+  function fixAndParseJson(jsonToLoad: string, tryToFixWithGpt: boolean = true): Record<string, any> {
     try {
-      return JSON.parse(json_to_load.replace(/\t/g, ''));
+      return JSON.parse(jsonToLoad.replace(/\t/g, ''));
     } catch (error) {}
   
     try {
-      const corrected_json = correctJson(json_to_load);
-      return JSON.parse(corrected_json);
+      const correctedJson = correctJson(jsonToLoad);
+      return JSON.parse(correctedJson);
     } catch (error) {}
   
     // Try to find the first brace and then parse the rest of the string
     try {
-      const brace_index = json_to_load.indexOf('{');
-      let maybe_fixed_json = json_to_load.slice(brace_index);
-      const last_brace_index = maybe_fixed_json.lastIndexOf('}');
-      maybe_fixed_json = maybe_fixed_json.slice(0, last_brace_index + 1);
-      return JSON.parse(maybe_fixed_json);
+      const braceIndex = jsonToLoad.indexOf('{');
+      let maybeFixedJson = jsonToLoad.slice(braceIndex);
+      const lastBraceIndex = maybeFixedJson.lastIndexOf('}');
+      maybeFixedJson = maybeFixedJson.slice(0, lastBraceIndex + 1);
+      return JSON.parse(maybeFixedJson);
     } catch (error) {
-      if (try_to_fix_with_gpt) {
-        return try_ai_fix(true, error, json_to_load);
+      if (tryToFixWithGpt) {
+        return try_ai_fix(true, error, jsonToLoad);
       } else {
         return {};
       }
@@ -138,7 +138,7 @@ export function fix_json_using_multiple_techniques(assistant_reply: string): Rec
       throw exception;
     }
   
-    if (CFG.debug_mode) {
+    if (CFG.debugMode) {
       logger.warn(
         `Warning: Failed to parse AI output, attempting to fix.
         If you see this warning frequently, it's likely that your prompt is confusing the AI.
@@ -161,7 +161,7 @@ export function fix_json_using_multiple_techniques(assistant_reply: string): Rec
 
   
   function attempt_to_fix_json_by_finding_outermost_brackets(json_string: string): any {
-    if (CFG.speak_mode && CFG.debug_mode) {
+    if (CFG.speakMode && CFG.debugMode) {
       logger.info("Attempting to fix JSON by finding outermost brackets\n");
     }
   
@@ -178,13 +178,13 @@ export function fix_json_using_multiple_techniques(assistant_reply: string): Rec
       }
   
     } catch (error) {
-      if (CFG.debug_mode) {
+      if (CFG.debugMode) {
         logger.error(`Error: Invalid JSON: ${json_string}\n`);
       }
       logger.error("Error: Invalid JSON, setting it to empty JSON now.\n");
       json_string = '{}';
     }
   
-    return fix_and_parse_json(json_string);
+    return fixAndParseJson(json_string);
   }
   

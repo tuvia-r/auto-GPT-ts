@@ -5,7 +5,7 @@ import { Message } from "./base";
 import { Config } from "../config/config";
 
 const configuration = new Configuration({
-  apiKey: new Config().openai_api_key,
+  apiKey: new Config().openaiApiKey,
 });
 const openai = new OpenAIApi(configuration);
 
@@ -72,7 +72,7 @@ export async function callAiFunction(
 ): Promise<string> {
   const cfg = new Config();
   if (!model) {
-    model = cfg.smart_llm_model;
+    model = cfg.smartLlmModel;
   }
   // For each arg, if any are null, convert to "null":
   const parsedArgs = args.map((arg) => (arg !== null ? String(arg) : "null"));
@@ -162,7 +162,7 @@ export async function createChatCompletion(
     logger.info(
       "FAILED TO GET RESPONSE FROM OPENAI Auto-GPT has failed to get a response from OpenAI's services. Try running Auto-GPT again, and if the problem the persists try running it with --debug."
     );
-    if (cfg.debug_mode) {
+    if (cfg.debugMode) {
       throw new Error(`Failed to get response after ${num_retries} retries`);
     } else {
       process.exit(1);

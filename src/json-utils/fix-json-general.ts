@@ -4,80 +4,80 @@ import { extractCharPosition } from "./utilities";
 
 const logger = getLogger('json-utils')
 
-export function fixInvalidEscape(json_to_load: string, error_message: string): string {
-    while (error_message.startsWith("Invalid \\escape")) {
-        const bad_escape_location = extractCharPosition(error_message);
-        json_to_load = json_to_load.slice(0, bad_escape_location) + json_to_load.slice(bad_escape_location + 1);
+export function fixInvalidEscape(jsonToLoad: string, errorMessage: string): string {
+    while (errorMessage.startsWith("Invalid \\escape")) {
+        const badEscapeLocation = extractCharPosition(errorMessage);
+        jsonToLoad = jsonToLoad.slice(0, badEscapeLocation) + jsonToLoad.slice(badEscapeLocation + 1);
         try {
-            JSON.parse(json_to_load);
-            return json_to_load;
+            JSON.parse(jsonToLoad);
+            return jsonToLoad;
         } catch (e) {
             logger.debug("json loads error - fix invalid escape", e);
-            error_message = e.toString();
+            errorMessage = e.toString();
         }
     }
-    return json_to_load;
+    return jsonToLoad;
 }
 
-function balance_braces(json_string: string): string | undefined {
-    let open_braces_count = json_string.split("{").length - 1;
-    let close_braces_count = json_string.split("}").length - 1;
+function balanceBraces(jsonString: string): string | undefined {
+    let openBracesCount = jsonString.split("{").length - 1;
+    let closeBracesCount = jsonString.split("}").length - 1;
   
-    while (open_braces_count > close_braces_count) {
-      json_string += "}";
-      close_braces_count++;
+    while (openBracesCount > closeBracesCount) {
+      jsonString += "}";
+      closeBracesCount++;
     }
   
-    while (close_braces_count > open_braces_count) {
-      json_string = json_string.slice(0, json_string.lastIndexOf("}"));
-      close_braces_count--;
+    while (closeBracesCount > openBracesCount) {
+      jsonString = jsonString.slice(0, jsonString.lastIndexOf("}"));
+      closeBracesCount--;
     }
   
     try {
-      JSON.parse(json_string);
-      return json_string;
+      JSON.parse(jsonString);
+      return jsonString;
     } catch {
       return undefined;
     }
   }
   
 
-  function add_quotes_to_property_names(json_string: string): string {
-    const property_name_pattern = /(\w+):/g;
-    const corrected_json_string = json_string.replace(property_name_pattern, (match, p1) => `"${p1}":`);
+  function addQuotesToPropertyNames(jsonString: string): string {
+    const propertyNamePattern = /(\w+):/g;
+    const correctedJsonString = jsonString.replace(propertyNamePattern, (match, p1) => `"${p1}":`);
   
     try {
-      JSON.parse(corrected_json_string);
-      return corrected_json_string;
+      JSON.parse(correctedJsonString);
+      return correctedJsonString;
     } catch (e) {
       throw e;
     }
   }
 
-export function correctJson(json_to_load: string): string {
+export function correctJson(jsonToLoad: string): string {
     try {
-        JSON.parse(json_to_load);
-        return json_to_load;
+        JSON.parse(jsonToLoad);
+        return jsonToLoad;
     } catch (e) {
-        let error_message = e.message;
-        if (error_message.startsWith("Invalid \\escape")) {
-            json_to_load = fixInvalidEscape(json_to_load, error_message);
+        let errorMessage = e.message;
+        if (errorMessage.startsWith("Invalid \\escape")) {
+            jsonToLoad = fixInvalidEscape(jsonToLoad, errorMessage);
         }
-        if (error_message.startsWith("Expecting property name enclosed in double quotes")) {
-            json_to_load = add_quotes_to_property_names(json_to_load);
+        if (errorMessage.startsWith("Expecting property name enclosed in double quotes")) {
+            jsonToLoad = addQuotesToPropertyNames(jsonToLoad);
             try {
-                JSON.parse(json_to_load);
-                return json_to_load;
+                JSON.parse(jsonToLoad);
+                return jsonToLoad;
             } catch (e) {
-                error_message = e.message;
+                errorMessage = e.message;
             }
         }
-        const balanced_str = balance_braces(json_to_load);
-        if (balanced_str) {
-            return balanced_str;
+        const balancedStr = balanceBraces(jsonToLoad);
+        if (balancedStr) {
+            return balancedStr;
         }
     }
-    return json_to_load;
+    return jsonToLoad;
 }
 
   

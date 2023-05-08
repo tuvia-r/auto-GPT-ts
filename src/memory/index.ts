@@ -1,9 +1,22 @@
+import { Config } from "../config";
+import { MemoryProvider } from "./base";
 import { LocalCache } from "./local";
+export * from './base';
 
+const config = new Config();
 
-export function getMemory(config: any) {
-    return new LocalCache(config);
+export const supportedMemoryTypes: typeof MemoryProvider[] = [LocalCache];
+
+export function getMemory() {
+    const memoryType = config.memoryBackend;
+    const constructor = supportedMemoryTypes.find((m) => m.memoryName === memoryType) as any; 
+    if (!constructor) {
+        throw new Error(`Memory type ${memoryType} is not supported`);
+    }
+    return new constructor();
 }
 
 
-export const supportedMemoryTypes = ["local"];
+export function addMemoryTypes(...memoryTypes: typeof MemoryProvider[]) {
+    supportedMemoryTypes.push(...memoryTypes);
+}

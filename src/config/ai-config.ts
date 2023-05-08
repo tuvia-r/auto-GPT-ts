@@ -1,11 +1,11 @@
-import { PromptGenerator } from "../prompt/prompt";
-// import osName from 'os-name';
+import { PromptGenerator } from "../prompt/prompt-base";
 import { CommandRegistry } from "../commands/command";
 import { Config } from "./config";
 import { buildDefaultPromptGenerator } from "../prompt/prompt-generator";
 import { platform } from "node:os";
 import * as fs from 'fs';
 import * as yaml from 'js-yaml';
+import { osName } from "../os-name";
 
 interface AIConfigParams {
     aiName: string
@@ -106,18 +106,11 @@ export class AIConfig {
     promptGenerator.name = this.aiName;
     promptGenerator.role = this.aiRole;
     promptGenerator.commandRegistry = this.commandRegistry;
-    for (const plugin of cfg.plugins) {
-      if (!plugin.canHandlePostPrompt()) {
-        continue;
-      }
-      promptGenerator = plugin.postPrompt(promptGenerator);
-    }
 
-    if (cfg.execute_local_commands) {
+    if (cfg.executeLocalCommands) {
        // add OS info to prompt
        const os_name = platform();
-       const os_info =
-         os_name !== 'linux' ? platform() : '';//osName();
+       const os_info = osName(os_name)
  
        promptStart += `\nThe OS you are running on is: ${os_info}`;
      }

@@ -1,4 +1,4 @@
-import { Logger, getLogger } from './logging';
+import { getLogger } from './logging';
 import { Config } from "./config/config";
 import chalk from 'chalk';
 import { validateYamlFile } from "./utils";
@@ -22,14 +22,11 @@ export function createConfig(
     allowDownloads: boolean,
     skipNews: boolean
   ): void {
-    CFG.set_debug_mode(false);
-    // CFG.set_continuous_mode(false);
-    CFG.set_speak_mode(false);
-    Logger.noDebug = true;
+    // CFG.set_speak_mode(false); // TODO: implement speak mode
   
     if (debug) {
       logger.info("Debug Mode: " + `${chalk.green("ENABLED")}`);
-      CFG.set_debug_mode(true);
+      CFG.setDebugMode(true);
     }
   
     if (continuous) {
@@ -40,13 +37,13 @@ export function createConfig(
           " cause your AI to run forever or carry out actions you would not usually" +
           " authorise. Use at your own risk.")
       );
-      CFG.set_continuous_mode(true);
+      CFG.setContinuousMode(true);
   
       if (continuousLimit) {
         logger.info(
           "Continuous Limit: " + chalk.green(`${continuousLimit}`)
         );
-        CFG.set_continuous_limit(continuousLimit);
+        CFG.setContinuousLimit(continuousLimit);
       }
     }
   
@@ -57,30 +54,30 @@ export function createConfig(
   
     if (gpt3only) {
       logger.info("GPT3.5 Only Mode: " + `${chalk.green("ENABLED")}`);
-      CFG.set_smart_llm_model(CFG.fast_llm_model);
+      CFG.setSmartLlmModel(CFG.fastLlmModel);
     }
   
     if (gpt4only) {
       logger.info("GPT4 Only Mode: " + `${chalk.green("ENABLED")}`);
-      CFG.set_fast_llm_model(CFG.smart_llm_model);
+      CFG.setFastLlmModel(CFG.smartLlmModel);
     }
   
     if (memoryType) {
-      const supportedMemory = supportedMemoryTypes;
+      const supportedMemory = supportedMemoryTypes.map((m) => m.memoryName);
       const chosen = memoryType;
       if (!supportedMemory.includes(chosen)) {
         logger.info(
           "ONLY THE FOLLOWING MEMORY BACKENDS ARE SUPPORTED: " + chalk.red(`${supportedMemory}`));
         logger.info(
-          "Defaulting to: " + chalk.yellow(CFG.memory_backend));
+          "Defaulting to: " + chalk.yellow(CFG.memoryBackend));
       } else {
-        CFG.memory_backend = chosen;
+        CFG.memoryBackend = chosen;
       }
     }
   
     if (skipReprompt) {
       logger.info("Skip Re-prompt: " + `${chalk.green("ENABLED")}`);
-      CFG.skip_reprompt = true;
+      CFG.skipReprompt = true;
     }
   
     if (aiSettingsFile) {
@@ -96,8 +93,8 @@ export function createConfig(
   
       logger.info(
         "Using AI Settings File:" + chalk.green(`${file}`));
-      CFG.ai_settings_file = file;
-      CFG.skip_reprompt = true;
+      CFG.aiSettingsFile = file;
+      CFG.skipReprompt = true;
     }
   
     if (allowDownloads) {
@@ -105,7 +102,7 @@ export function createConfig(
       logger.info(
         "WARNING: " + chalk.yellow(`Auto-GPT will now be able to download and save files to your machine. It is recommended that you monitor any files it downloads carefully.`)
       );
-      CFG.allow_downloads = true;
+      CFG.allowDownloads = true;
     }
 }
   

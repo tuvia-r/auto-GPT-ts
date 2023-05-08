@@ -2,7 +2,7 @@ import { getLogger } from '../logging';
 import { Agent } from "../agent/agent";
 import { Config } from "../config/config";
 import { getNewlyTrimmedMessages, updateRunningSummary } from "../memory-managment/summary-memory";
-import { MemoryProviderSingleton } from "../memory/base";
+import { MemoryProvider } from "../memory/base";
 import { ApiManager } from "./api-manages";
 import { Message, Role } from "./base";
 import { createChatCompletion } from "./llm-utils";
@@ -73,13 +73,13 @@ export function chat_with_ai(
   prompt: string,
   user_input: string,
   full_message_history: Message[],
-  permanent_memory: MemoryProviderSingleton,
+  permanent_memory: MemoryProvider,
   token_limit: number
 ): Promise<string> {
   return new Promise<string>(async (resolve, reject) => {
     while (true) {
       try {
-        const model = new Config().fast_llm_model //""; // TODO: implement cfg.fast_llm_model; // TODO: Change model from hardcode to argument
+        const model = new Config().fastLlmModel //""; // TODO: implement cfg.fast_llm_model; // TODO: Change model from hardcode to argument
         // Reserve 1000 tokens for the response
         logger.debug(`Token limit: ${token_limit}`);
         const send_token_limit = token_limit - 1000;

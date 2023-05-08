@@ -1,3 +1,11 @@
+/**
+ * this file is the entry point for the CLI version of Auto-GPT
+ */
+
+
+import * as dotenv from 'dotenv' // see https://github.com/motdotla/dotenv#how-do-i-use-dotenv-with-import
+dotenv.config()
+
 import * as commander from "commander";
 import { runAutoGpt } from "./main";
 
@@ -22,7 +30,6 @@ program
     .option("--allow-downloads", "Dangerous: Allows Auto-GPT to download files natively.")
     .option("--skip-news", "Specifies whether to suppress the output of latest news on startup.")
     .option("-w, --workspace-directory <dir>", "Specifies the workspace directory path")
-    .option("--install-plugin-deps", "Installs external dependencies for 3rd party plugins.");
 
 program.parse(process.argv);
 
@@ -42,6 +49,5 @@ if (program.args.length === 0) {
         opt.allowDownloads,
         opt.skipNews,
         opt.workspaceDirectory,
-        opt.installPluginDeps,
     );
 }

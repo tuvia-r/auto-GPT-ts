@@ -6,7 +6,6 @@ import { Message } from './llm/base';
 import { Config } from './config/config';
 import { getLogger } from './logging';
 
-
 const CFG = new Config();
 const logger = getLogger('Auto-GPT', 'Setup');
 
@@ -164,7 +163,7 @@ async function generateAiConfigAutomatic(userPrompt: string): Promise<AIConfig> 
                       Respond only with the output in the exact format specified in the system prompt, with no explanation or conversation.\n`,
         },
     ];
-    const output = await createChatCompletion(messages, CFG.fast_llm_model);
+    const output = await createChatCompletion(messages, CFG.fastLlmModel);
 
     // Debug LLM Output
     logger.debug(`AI Config Generator Raw Output: ${output}`);

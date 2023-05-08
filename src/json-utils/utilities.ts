@@ -23,7 +23,7 @@ export function validateJson(jsonObj: object, schemaName: string): object | null
 
   if (errors) {
     console.error("The JSON object is invalid.");
-    if (CFG.debug_mode) {
+    if (CFG.debugMode) {
       console.error(JSON.stringify(jsonObj, null, 4));
       console.error("The following issues were found:");
     }

@@ -20,9 +20,10 @@ my take of auto-GPT in typescript
 ```sh
 $ npm i
 ```
+
 * start the program:
 ```sh
-$ npm run dev
+$ npm run start
 ```
 
 

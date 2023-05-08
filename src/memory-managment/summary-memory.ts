@@ -98,7 +98,7 @@ export async function updateRunningSummary(
   const cfg = new Config();
   const completionMemory = await createChatCompletion(
     messages,
-    cfg.fast_llm_model
+    cfg.fastLlmModel
   );
 
   if (completionMemory.trim().length) {

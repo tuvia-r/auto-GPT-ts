@@ -90,8 +90,6 @@ export class PromptGenerator extends Loggable {
       4
     );
 
-    logger.debug(`all commands: \n ${this.generateNumberedList(this.generateCommandsStrings(this.commands))}`)
-
     return [
       `Constraints:\n${this.generateNumberedList(this.constraints)}\n\n`,
       "Commands:\n",
@@ -144,9 +142,9 @@ export async function constructMainAiConfig(): Promise<AIConfig> {
    * @returns AIConfig: The AIConfig instance
    */
 
-  let config = AIConfig.load(CFG.ai_settings_file);
+  let config = AIConfig.load(CFG.aiSettingsFile);
 
-  if (CFG.skip_reprompt && config.aiName) {
+  if (CFG.skipReprompt && config.aiName) {
     logger.info("Name :" + chalk.green(config.aiName));
     logger.info("Role :" + chalk.green(config.aiRole));
     logger.info("Goals:" + chalk.green(`${config.aiGoals}`));
@@ -166,16 +164,16 @@ export async function constructMainAiConfig(): Promise<AIConfig> {
 Name:  ${config.aiName}
 Role:  ${config.aiRole}
 Goals: ${config.aiGoals}
-API Budget: ${config.apiBudget <= 0 ? "infinite" : `$${config.apiBudget}`}
-Continue (${CFG.authorise_key}/${CFG.exit_key}) `);
-    if (should_continue.toLowerCase() === CFG.exit_key) {
+API Budget: ${config.apiBudget <= 0 ? "infinite" : `${config.apiBudget}`}
+Continue (${CFG.authoriseKey}/${CFG.exitKey}) `);
+    if (should_continue.toLowerCase() === CFG.exitKey) {
       config = new AIConfig();
     }
   }
 
   if (!config.aiName) {
     config = await promptUser();
-    config.save(CFG.ai_settings_file);
+    config.save(CFG.aiSettingsFile);
   }
 
   // set the total api budget

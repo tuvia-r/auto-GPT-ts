@@ -1,9 +1,10 @@
-import { MemoryProviderSingleton } from "./base";
+import { MemoryProvider } from "./base";
 import * as path from 'path';
 import * as fs from 'fs'
 import {dot} from 'mathjs'
 import { getAdaEmbedding } from "../llm/llm-utils";
 import { Singleton } from "../singelton";
+import { Config } from "../config/config";
 
 const EMBED_DIM = 1536;
 
@@ -37,15 +38,18 @@ class CacheContent {
   }
 }
 
+const cfg = new Config();
+
 @Singleton
-export class LocalCache extends MemoryProviderSingleton {
+export class LocalCache extends MemoryProvider {
+  static memoryName: string = "local";
   filename: string;
   data: CacheContent;
 
-  constructor(cfg: any) { // DODO: implement
+  constructor() { // DODO: implement
     super();
-    const workspacePath = path.resolve(cfg.workspace_path);
-    this.filename = path.join(workspacePath, `${cfg.memory_index}.json`);
+    const workspacePath = path.resolve(cfg.workspacePath);
+    this.filename = path.join(workspacePath, `${cfg.memoryIndex}.json`);
 
     fs.writeFileSync(this.filename, "{}");
 

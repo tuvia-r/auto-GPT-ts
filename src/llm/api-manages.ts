@@ -7,7 +7,7 @@ import { COSTS } from "./models-info";
 import { Configuration, CreateChatCompletionResponse, OpenAIApi } from "openai";
 
 const configuration = new Configuration({
-  apiKey: new Config().openai_api_key
+  apiKey: new Config().openaiApiKey
 });
 const openai = new OpenAIApi(configuration);
 
