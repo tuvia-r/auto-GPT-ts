@@ -11,3 +11,7 @@ export * from './config';
 export * from './utils';
 export * from './json-utils';
 
+export function startCli() {
+    return import('./cli');
+}
+
