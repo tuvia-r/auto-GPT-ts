@@ -1,6 +1,6 @@
 {
   "name": "auto-gpt-ts",
-  "version": "0.0.2-initial.3",
+  "version": "0.0.2",
   "description": "my take of Auto-GPT in typescript",
   "repository": {
     "type": "git",
