@@ -44,12 +44,13 @@ export class ApiManager extends Loggable {
     if (!temperature) {
       temperature = cfg.temperature;
     }
+    this.logger.debug(`Creating chat completion with model ${model}, temperature ${temperature}, max_tokens ${max_tokens}`)
     const response = (
       await openai.createChatCompletion({
         model: model,
         messages: messages,
         temperature: temperature,
-        // max_tokens: max_tokens,
+        max_tokens: max_tokens,
       })
     ).data;
 

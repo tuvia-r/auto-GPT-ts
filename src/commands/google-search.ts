@@ -1,5 +1,6 @@
 import * as DDG from 'duck-duck-scrape';
 import { CommandDecorator } from './command';
+import { getLogger } from '../logging';
 
 
 
@@ -10,7 +11,9 @@ import { CommandDecorator } from './command';
     aliases: ['google', 'search']
 })
 export class GoogleSearchCommand {
+    static logger = getLogger('GoogleSearchCommand')
     static async googleSearch(query: string, maxResults: number) {
+        this.logger.debug(`executing: googleSearch(${query}, ${maxResults})`)
         const res = await DDG.search(query, {});
         return res.results.slice(0, maxResults);
     }

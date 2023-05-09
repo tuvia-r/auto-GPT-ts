@@ -10,6 +10,7 @@ import { countMessageTokens } from "./token-counter";
 
 
 const logger = getLogger();
+const config = new Config();
 
 /**
  * Create a chat message with the given role and content.
@@ -46,7 +47,7 @@ export function generateContext(
     createChatMessage("system", prompt),
     createChatMessage(
       "system",
-      `The current time and date is ${new Date().toLocaleString()}`
+      `The current time and date is ${new Date().toLocaleString()}, Timezone: ${config.currentTimeZone}, Location: ${config.currentGeoLocation}.\n\n`
     ),
     // createChatMessage(
     //     "system",
@@ -77,9 +78,10 @@ export function chat_with_ai(
   token_limit: number
 ): Promise<string> {
   return new Promise<string>(async (resolve, reject) => {
+    const cfg = new Config();
     while (true) {
       try {
-        const model = new Config().fastLlmModel //""; // TODO: implement cfg.fast_llm_model; // TODO: Change model from hardcode to argument
+        const model = cfg.fastLlmModel;
         // Reserve 1000 tokens for the response
         logger.debug(`Token limit: ${token_limit}`);
         const send_token_limit = token_limit - 1000;
@@ -169,11 +171,11 @@ export function chat_with_ai(
         // Append user input, the length of this is accounted for above
         currentContext.push(createChatMessage("user", user_input));
 
-        const tokens_remaining = token_limit - current_tokens_used;
+        const tokensRemaining = token_limit - current_tokens_used;
 
         logger.debug(`Token limit: ${token_limit}`);
         logger.debug(`Send Token Count: ${current_tokens_used}`);
-        logger.debug(`Tokens remaining for response: ${tokens_remaining}`);
+        logger.debug(`Tokens remaining for response: ${tokensRemaining}`);
         logger.debug("------------ CONTEXT SENT TO AI ---------------");
         for (const message of currentContext) {
           // Skip printing the prompt
@@ -193,8 +195,8 @@ export function chat_with_ai(
         const assistant_reply = await createChatCompletion(
           currentContext,
           model,
-          0.9, // TODO: implement cfg.temperature (fix temp > 1)
-          tokens_remaining
+          cfg.temperature,
+          tokensRemaining
         );
 
         full_message_history.push(createChatMessage("user", user_input));

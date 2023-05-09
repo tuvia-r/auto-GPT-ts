@@ -37,7 +37,6 @@ export interface InteractionState {
 }
 const CFG = new Config();
 
-
 /**
  * a base agent class that can be extended to create an agent with a specific AI role.
  */
@@ -147,12 +146,12 @@ export class Agent extends Loggable {
       };
       await this.loopInteraction();
       await this.onInteractionLoopEnd();
+      this.cycleCount += 1;
     }
   }
 
   private async loopInteraction() {
     // Discontinue if continuous limit is reached
-    this.cycleCount += 1;
     this.logCycleHandler.logCountWithinCycle = 0;
     this.logCycleHandler.logCycle(
       this.config.aiName,
@@ -192,18 +191,14 @@ export class Agent extends Loggable {
     } else if (this.interactionState.commandName) {
       let commandResult = await executeCommand(
         this.interactionState.commandName,
-        this.interactionState.args
+        this.interactionState.parsedArgs
       );
 
       if (typeof commandResult === "object") {
         commandResult = JSON.stringify(commandResult);
       }
 
-      result = `Command ${
-        this.interactionState.commandName
-      } returned the following result: ${
-        commandResult.slice(0, 500) // TODO: fix this
-      }`;
+      result = `Command ${this.interactionState.commandName} returned the following result: ${commandResult}`;
       const resultLength = countStringTokens(result, CFG.fastLlmModel);
       const memoryLength = countStringTokens(
         this.summaryMemory,
@@ -282,12 +277,14 @@ export class Agent extends Loggable {
       this.userInput = "";
       this.logger.info(
         "NEXT ACTION: " +
-          `COMMAND = ${this.interactionState.commandName}  ` +
-          `ARGUMENTS = ${JSON.stringify(
-            this.interactionState.parsedArgs ?? {},
-            null,
-            2
-          )}`
+          chalk.cyan(
+            `COMMAND = ${this.interactionState.commandName}  ` +
+              `ARGUMENTS = ${JSON.stringify(
+                this.interactionState.parsedArgs ?? {},
+                null,
+                2
+              )}`
+          )
       );
 
       this.logger.info(
@@ -354,7 +351,9 @@ export class Agent extends Loggable {
       }
       if (this.interactionState.userInput === "GENERATE NEXT COMMAND JSON") {
         this.logger.info(
-          `-=-=-=-=-=-=-= COMMAND AUTHORISED BY USER -=-=-=-=-=-=-=`
+          chalk.green(
+            `-=-=-=-=-=-=-= COMMAND AUTHORISED BY USER -=-=-=-=-=-=-=`
+          )
         );
       } else if (this.interactionState.userInput === "EXIT") {
         this.logger.info("Exiting...");

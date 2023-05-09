@@ -16,6 +16,9 @@ export class Config extends Loggable {
   allowDownloads = false;
   skipNews = false;
 
+  currentGeoLocation: string = process.env.CURRENT_GEO_LOCATION || "";;
+  currentTimeZone: string = process.env.CURRENT_TIMEZONE || Intl.DateTimeFormat().resolvedOptions().timeZone;
+
   useMacOsTts = process.env.USE_MAC_OS_TTS === "True";
 
   chatMessagesEnabled = process.env.CHAT_MESSAGES_ENABLED === "True";

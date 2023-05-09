@@ -48,6 +48,8 @@ export async function runAutoGpt(
   );
   checkOpenaiApiKey();
 
+
+
   if (!workspaceDirectory) {
     workspaceDirectory = Path.resolve(__dirname, "..", "auto_gpt_workspace");
   } else {
@@ -71,9 +73,13 @@ export async function runAutoGpt(
 
   cfg.fileLoggerPath = fileLoggerPath;
 
+
+  // logger.debug(`config: `, cfg)
+
   const aiName = "";
   const aiConfig = await constructMainAiConfig();
   aiConfig.commandRegistry = commandRegistry;
+
 
   // Initialize variables
   const fullMessageHistory: Message[] = [];

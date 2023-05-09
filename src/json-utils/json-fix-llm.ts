@@ -178,10 +178,7 @@ export function fixJsonUsingMultipleTechniques(assistantReply: string): Record<s
       }
   
     } catch (error) {
-      if (CFG.debugMode) {
-        logger.error(`Error: Invalid JSON: ${json_string}\n`);
-      }
-      logger.error("Error: Invalid JSON, setting it to empty JSON now.\n");
+      logger.debug(`Error: Invalid JSON: ${json_string}\n`);
       json_string = '{}';
     }
   

@@ -127,8 +127,7 @@ export async function createChatCompletion(
       response = await api_manager.createChatCompletion({
         model,
         messages,
-        // temperature,
-        temperature: 0.9, // TODO: fix
+        temperature,
         max_tokens: maxTokens,
       });
       break;

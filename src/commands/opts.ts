@@ -54,7 +54,7 @@ export class AddMemoryCommand {
   @CommandDecorator({
     name: "listAgents",
     description: "List all agents",
-    signature: "",
+    signature: " ",
   })
   export class ListAgents {
     static async listAgents() {

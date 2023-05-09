@@ -3,12 +3,13 @@ import * as yaml from 'js-yaml';
 import chalk from 'chalk';
 import * as fs from 'fs';
 import { simpleGit } from "simple-git";
-import { getLogger } from "./logging";
+import { Logger, getLogger } from "./logging";
 
 const logger = getLogger();
 
 
 export async function cleanInput(promptString: string = '', talk: boolean = false): Promise<string> {
+  return Logger.addTask(async () => {
   try {
     // ask for input, default when just pressing Enter is y
     logger.debug('Asking user via keyboard...');
@@ -22,6 +23,7 @@ export async function cleanInput(promptString: string = '', talk: boolean = fals
     logger.info('Quitting...');
     process.exit(0);
   }
+});
 }
 
 export function validateYamlFile(file: string): [boolean, string] {

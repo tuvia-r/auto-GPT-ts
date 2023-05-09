@@ -1,9 +1,12 @@
 import "reflect-metadata";
 import { Singleton } from "../singelton";
+import { Loggable } from "../logging";
 
 const AUTO_GPT_COMMAND_IDENTIFIER = "auto_gpt_command";
 
-export class Command {
+
+
+export class Command extends Loggable {
   signature: string;
 
   constructor(
@@ -15,10 +18,12 @@ export class Command {
     public aliases: string[] = [],
     public disabledReason: string | null = null
   ) {
+    super(name)
     this.signature = signature || this.method.toString();
   }
 
   call(...args: any[]): any {
+    this.logger.debug(`executing: ${this.name}('${args.join("', '")}')`);
     if (!this.enabled) {
       return `Command '${this.name}' is disabled: ${this.disabledReason}`;
     }

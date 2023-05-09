@@ -21,12 +21,12 @@ export const buildDefaultPromptGenerator = (promptGenerator = new PromptGenerato
 
   // Add constraints to the PromptGenerator object
   promptGenerator.addConstraint(
-    `~4000 word limit for short term memory. Your short term memory is short, so`,
+    `~4000 word limit for short term memory. Your short term memory is short, so` +
     ` immediately save important information to files.`
   );
 
   promptGenerator.addConstraint(
-    `If you are unsure how you previously did something or want to recall past`,
+    `If you are unsure how you previously did something or want to recall past` +
     ` events, thinking about similar events will help you remember.`
   );
 

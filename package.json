@@ -2,6 +2,17 @@
   "name": "auto-gpt-ts",
   "version": "0.0.2",
   "description": "my take of Auto-GPT in typescript",
+  "keywords": [
+    "AutoGPT",
+    "gpt-3",
+    "gpt-4",
+    "auto-gpt",
+    "auto-gpt-ts",
+    "gpt",
+    "gpt-typescript",
+    "auto-gpt-typescript",
+    "openai"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/tuvia-r/auto-GPT-ts.git"
@@ -12,6 +23,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc",
     "start": "rm -rf dist && tsc && node dist/cli.js",
+    "start:continuous": "rm -rf dist && tsc && node dist/cli.js --continuous",
+    "start:debug": "rm -rf dist && tsc && node dist/cli.js --debug",
     "dev": "ts-node src/cli.ts",
     "watch": "tsc -w",
     "lint": "eslint . --ext .ts",
@@ -41,6 +54,7 @@
     "vm2": "^3.9.17"
   },
   "devDependencies": {
+    "@types/debug": "^4.1.7",
     "@types/js-yaml": "^4.0.5",
     "@types/node": "^20.1.0",
     "reflect-metadata": "^0.1.13",

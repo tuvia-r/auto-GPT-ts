@@ -102,11 +102,11 @@ export function printAssistantThoughts(
   const assistantThoughtsText = assistantThoughts.text;
 
   logger.info(
-    `${chalk.blue(aiName.toUpperCase())} \n THOUGHTS: ${chalk.green(
+    `${aiName.toUpperCase()} \n ${chalk.yellow(`THOUGHTS:`)} ${
       assistantThoughtsText
-    )}`
+    }`
   );
-  logger.info(`REASONING: ${chalk.green(assistantThoughts.reasoning || "")}`);
+  logger.info(`${chalk.yellow(`REASONING:`)} ${assistantThoughts.reasoning || ""}`);
 
   if (assistantThoughts.plan) {
     let planString = "";
@@ -122,12 +122,11 @@ export function printAssistantThoughts(
     const lines = planString.split("\n");
 
     logger.info(
-      "PLAN: \n" +
-        chalk.green(
-          lines.map((line) => `  ${line.replace(/^-+ /, "").trim()}`).join("\n")
-        )
+      `${chalk.yellow(`PLAN:`)} \n` +
+          lines.map((line) => `${chalk.green('-')}  ${line.replace(/^-+ /, "").trim()}`).join("\n")
+        
     );
   }
 
-  logger.info(`CRITICISM: ${chalk.green(assistantThoughts.criticism || "")}`);
+  logger.info(`${chalk.yellow(`CRITICISM:`)} ${assistantThoughts.criticism || ""}`);
 }

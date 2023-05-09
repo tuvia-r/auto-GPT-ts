@@ -31,7 +31,7 @@ export function createConfig(
   
     if (continuous) {
       logger.info("Continuous Mode: " + `${chalk.red("ENABLED")}`);
-      logger.info(
+      logger.warn(
         "WARNING: " +
         chalk.yellow("Continuous mode is not recommended. It is potentially dangerous and may" +
           " cause your AI to run forever or carry out actions you would not usually" +

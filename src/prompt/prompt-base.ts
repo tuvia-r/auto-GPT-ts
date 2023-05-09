@@ -100,8 +100,8 @@ export class PromptGenerator extends Loggable {
       "Performance Evaluation:\n",
       `${this.generateNumberedList(this.performanceEvaluation)}\n\n`,
       "You should only respond in JSON format as described below \n",
-      `Response Format: \n${formattedResponseFormat} \nEnsure the response can be`,
-      ` parsed by javascript JSON.parse`,
+      `Response Format: \n${formattedResponseFormat} `,
+      `Ensure the response can be parsed by javascript JSON.parse`,
     ];
   }
 
