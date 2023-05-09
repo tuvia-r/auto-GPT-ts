@@ -134,7 +134,7 @@ config.openaiApiKey = 'my key';
 
 ### Start a Agent
 
-you can see an example (here)[src/main.ts]
+you can see an example [here](./src/main.ts)
 
 
 

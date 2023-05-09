@@ -21,7 +21,7 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsc",
+    "build": "rm -rf dist tsc",
     "start": "rm -rf dist && tsc && node dist/cli.js",
     "start:continuous": "rm -rf dist && tsc && node dist/cli.js --continuous",
     "start:debug": "rm -rf dist && tsc && node dist/cli.js --debug",
