@@ -76,6 +76,13 @@ export async function updateRunningSummary(
   const prompt = `Your task is to create a concise running summary of actions and information results in the provided text, focusing on key and potentially important information to remember.
   
   You will receive the current summary and the your latest actions. Combine them, adding relevant key information from the latest development in 1st person past tense and keeping the summary concise.
+  if something failed, specify what failed and why.
+  if something succeeded, specify what succeeded and why it is important.
+
+  summarize the 'Summary so far' in less detail than the 'Latest Development' in more detail.
+  the summary should not be divided into 2 parts: 'Summary so far' and 'Latest Development'.
+
+  the summary should not contain more then 1000 tokens.
   
   Summary So Far:
   """
@@ -104,7 +111,7 @@ export async function updateRunningSummary(
   if (completionMemory.trim().length) {
     const messageToReturn = {
       role: "system",
-      content: `This reminds you of these events from your past: \n${completionMemory}`,
+      content: `This reminds you of these events from your past:\n${completionMemory}`,
     };
     return messageToReturn.content;
   }

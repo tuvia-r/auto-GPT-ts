@@ -99,7 +99,7 @@ export function printAssistantThoughts(
 ): void {
   const logger = getLogger();
   const assistantThoughts = assistantReplyJsonValid.thoughts;
-  const assistantThoughtsText = assistantThoughts.text;
+  const assistantThoughtsText = assistantThoughts?.text;
 
   logger.info(
     `${aiName.toUpperCase()} \n ${chalk.yellow(`THOUGHTS:`)} ${

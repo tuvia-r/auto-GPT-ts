@@ -7,7 +7,7 @@ const config = new Config();
 
 export const supportedMemoryTypes: typeof MemoryProvider[] = [LocalCache];
 
-export function getMemory() {
+export function getMemory(): MemoryProvider {
     const memoryType = config.memoryBackend;
     const constructor = supportedMemoryTypes.find((m) => m.memoryName === memoryType) as any; 
     if (!constructor) {

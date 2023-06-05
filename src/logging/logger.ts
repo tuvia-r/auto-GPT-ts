@@ -1,3 +1,5 @@
+import * as fs from "fs";
+
 export type LogFunction = (
   message: string,
   jsonObject?: Record<string, any>
@@ -18,12 +20,11 @@ export enum LogLevel {
   SILENT = "silent",
 }
 
-export const noop = () => {};
-
 export class Logger implements ILogger {
   static noDebug = false;
   static logLevel = LogLevel.INFO;
   static useTypewriterAffect = true;
+  static logFile = `./workspace/logs/${new Date().toISOString()}.full-log.log`;
 
   static logLevelToNumber(logLevel: LogLevel): number {
     switch (logLevel) {
@@ -75,7 +76,6 @@ export class Logger implements ILogger {
     this.isLooping = true;
     const task = this.taskStack.shift();
     if (task) {
-      process.stdout.write("\n");
       return Promise.resolve(task()).then(() =>
         process.nextTick(() => this.loop(true), 10)
       );
@@ -107,15 +107,21 @@ export class Logger implements ILogger {
     if (jsonObject) {
       typewriterStack += JSON.stringify(jsonObject, null, 2);
     }
-    Logger.typewriterTyper(typewriterStack);
+    Logger.typewriterTyper(typewriterStack + "\n");
   }
 
-  private createLogFunction(logFunction: LogFunction, typeWriter = false) {
+  private createLogFunction(logFunction: LogFunction, typeWriter = false, silent = false) {
     return async (message: string, jsonObject?: Record<string, any>) => {
       const messageWithPrefix = `${this.logFrefixString} ${message}`;
       const inputs = jsonObject
         ? [messageWithPrefix, jsonObject]
         : [messageWithPrefix];
+
+      fs.appendFileSync(Logger.logFile, `${messageWithPrefix} ${jsonObject ? JSON.stringify(jsonObject ?? {}, null, 2): ''} \n`);
+
+      if (silent) {
+        return;
+      }
 
       if (!Logger.useTypewriterAffect) {
         return logFunction(...(inputs as [string, Record<string, any>]));
@@ -140,7 +146,7 @@ export class Logger implements ILogger {
       Logger.logLevelToNumber(Logger.logLevel) >
       Logger.logLevelToNumber(LogLevel.INFO)
     ) {
-      return noop;
+      return this.createLogFunction(this.logger.info, false, true);
     }
 
     return this.createLogFunction(this.logger.info, true);
@@ -151,7 +157,7 @@ export class Logger implements ILogger {
       Logger.logLevelToNumber(Logger.logLevel) >
       Logger.logLevelToNumber(LogLevel.WARN)
     ) {
-      return noop;
+      return this.createLogFunction(this.warn, false, true);
     }
     return this.createLogFunction(this.logger.warn);
   }
@@ -161,7 +167,7 @@ export class Logger implements ILogger {
       Logger.logLevelToNumber(Logger.logLevel) >
       Logger.logLevelToNumber(LogLevel.ERROR)
     ) {
-      return noop;
+      return this.createLogFunction(this.logger.error, false, true);
     }
     return this.createLogFunction(this.logger.error);
   }
@@ -171,11 +177,17 @@ export class Logger implements ILogger {
       Logger.logLevelToNumber(Logger.logLevel) >
       Logger.logLevelToNumber(LogLevel.DEBUG)
     ) {
-      return noop;
+      return this.createLogFunction(this.logger.debug, false, true);
     }
     return this.createLogFunction(this.logger.debug);
   }
 }
+
+if(!fs.existsSync('./workspace/logs')) {
+  fs.mkdirSync('./workspace/logs', { recursive: true });
+}
+
+fs.writeFileSync(Logger.logFile, "");
 
 export class Loggable {
   protected logger: Logger;

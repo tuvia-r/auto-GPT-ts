@@ -26,15 +26,27 @@ export class Embeddings {
 class CacheContent {
   texts: string[];
   embeddings: Embeddings;
+  filename = path.join(path.resolve(cfg.workspacePath), `${cfg.memoryIndex}.json`);
   constructor() {
     this.texts = [];
     this.embeddings = new Embeddings();
+
+    if(fs.existsSync(this.filename)) {
+      const data = JSON.parse(fs.readFileSync(this.filename, 'utf8'));
+      this.texts = data.texts ?? this.texts;
+      this.embeddings.embeddingsArray = data.embeddings ?? this.embeddings.embeddingsArray;
+    }
+    else {
+      fs.writeFileSync(this.filename, "{}");
+    }
   }
 
   async add(text: string) {
       const embedding = await getAdaEmbedding(text);
       this.embeddings.add(embedding)
       this.texts.push(text);
+
+      fs.writeFileSync(this.filename, JSON.stringify({embeddings: this.embeddings.embeddingsArray, texts: this.texts}, null, 2));
   }
 }
 
@@ -43,16 +55,10 @@ const cfg = new Config();
 @Singleton
 export class LocalCache extends MemoryProvider {
   static memoryName: string = "local";
-  filename: string;
   data: CacheContent;
 
   constructor() { // DODO: implement
     super();
-    const workspacePath = path.resolve(cfg.workspacePath);
-    this.filename = path.join(workspacePath, `${cfg.memoryIndex}.json`);
-
-    fs.writeFileSync(this.filename, "{}");
-
     this.data = new CacheContent();
   }
 
@@ -61,8 +67,6 @@ export class LocalCache extends MemoryProvider {
       return "";
     }
     await this.data.add(text)
-
-    fs.writeFileSync(this.filename, JSON.stringify(this.data));
     return text;
   }
 
@@ -75,7 +79,11 @@ export class LocalCache extends MemoryProvider {
     return this.getRelevant(data, 1);
   }
 
-  async getRelevant(text: string, k = 5): Promise<string[]> {
+  getAll(): string[] {
+    return this.data.texts;
+  }
+
+  async getRelevant(text: string, k = 10): Promise<string[]> {
     const embedding = await getAdaEmbedding(text);
 
     const scores = this.data.embeddings.dot(embedding);

@@ -1,6 +1,7 @@
 import { Config } from "../config/config";
 import { Message } from "../llm/base";
 import { createChatCompletion } from "../llm/llm-utils";
+import { countMessageTokens } from "../llm/token-counter";
 import { Singleton } from "../singelton";
 
 @Singleton
@@ -18,8 +19,11 @@ export class AgentManager {
   ): Promise<[number, string]> {
     const messages: Message[] = [{ role: "user", content: prompt }];
 
+
+    const tokensUsed = countMessageTokens(messages, model);
+
     // Start GPT instance
-    let agentReply = await createChatCompletion(messages, model);
+    let agentReply = await createChatCompletion(messages, model, this.cfg.temperature, this.cfg.fastTokenLimit - tokensUsed);
 
     messages.push({ role: "assistant", content: agentReply });
 
@@ -40,8 +44,10 @@ export class AgentManager {
     // Add user message to message history before sending to agent
     messages.push({ role: "user", content: message });
 
+    const tokensUsed = countMessageTokens(messages, model);
+
     // Start GPT instance
-    let agentReply = await createChatCompletion(messages, model);
+    let agentReply = await createChatCompletion(messages, model, this.cfg.temperature, this.cfg.fastTokenLimit - tokensUsed);
 
     messages.push({ role: "assistant", content: agentReply });
 

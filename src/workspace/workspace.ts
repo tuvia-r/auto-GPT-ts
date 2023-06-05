@@ -1,6 +1,7 @@
 import { PathLike } from 'fs';
 import * as path from 'path';
 import { Loggable } from '../logging';
+import * as fs from 'fs';
 
 export class Workspace extends Loggable {
   private static readonly NULL_BYTES = ["\u0000", "%00"]//["\0", "u\000", "\x00", "\z", "\u0000", "%00"]; TODO: fix this
@@ -12,6 +13,7 @@ export class Workspace extends Loggable {
     super();
     this._root = Workspace._sanitizePath(workspaceRoot.toString());
     this._restrictToWorkspace = restrictToWorkspace;
+    fs.writeFileSync(path.join(this._root, 'package.json'), '{"name": "PGT"}')
   }
 
   public get root(): string {

@@ -5,7 +5,7 @@ import { AIConfig } from "../config/ai-config";
 import { Config } from "../config/config";
 import { fixJsonUsingMultipleTechniques } from "../json-utils/json-fix-llm";
 import { validateJson } from "../json-utils/utilities";
-import { chat_with_ai, createChatMessage } from "../llm/chat";
+import { chatWithAi, createChatMessage } from "../llm/chat";
 import { createChatCompletion } from "../llm/llm-utils";
 import { countStringTokens } from "../llm/token-counter";
 import {
@@ -20,6 +20,7 @@ import { cleanInput } from "../utils";
 import { Workspace } from "../workspace/workspace";
 import { MemoryProvider } from "../memory/base";
 import { Message } from "../llm/base";
+import { updateRunningSummary } from "../memory-managment/summary-memory";
 
 export interface Thoughts {
   reasoning: string;
@@ -63,15 +64,19 @@ export class Agent extends Loggable {
     public config: AIConfig,
     public systemPrompt: string,
     public triggeringPrompt: string,
-    workspace_directory: string
+    workspaceDirectory: string
   ) {
     super();
-    this.summaryMemory = "I was created.";
-    this.lastMemoryIndex = 0;
     this.workspace = new Workspace(
-      workspace_directory,
+      workspaceDirectory,
       CFG.restrictToWorkspace
     );
+    this.init();
+  }
+
+  protected init() {
+    this.summaryMemory = "I was created.";
+    this.lastMemoryIndex = 0;
     this.created_at = new Date()
       .toISOString()
       .replace(/[-T:]/g, "")
@@ -80,7 +85,7 @@ export class Agent extends Loggable {
     this.logCycleHandler = new LogCycleHandler();
   }
 
-  private _resolvePathlikeCommandArgs(
+  protected _resolvePathlikeCommandArgs(
     commandArgs: { [key: string]: any } = {}
   ): {
     [key: string]: any;
@@ -107,7 +112,7 @@ export class Agent extends Loggable {
     return commandArgs;
   }
 
-  private async getSelfFeedback(
+  protected async getSelfFeedback(
     thoughts: Thoughts,
     llm_model: string
   ): Promise<string> {
@@ -136,6 +141,7 @@ export class Agent extends Loggable {
   }
 
   async startInteractionLoop(): Promise<void> {
+    this.summaryMemory = this.fullMessageHistory.length ? await updateRunningSummary('', this.fullMessageHistory) : "i was created.";
     this.cycleCount = 0;
     while (await this.shouldContinue()) {
       this.interactionState = {
@@ -150,7 +156,7 @@ export class Agent extends Loggable {
     }
   }
 
-  private async loopInteraction() {
+  protected async loopInteraction() {
     // Discontinue if continuous limit is reached
     this.logCycleHandler.logCountWithinCycle = 0;
     this.logCycleHandler.logCycle(
@@ -216,6 +222,7 @@ export class Agent extends Loggable {
 
     if (result) {
       this.fullMessageHistory.push(createChatMessage("system", result));
+      this.lastMemoryIndex++;
       this.logger.info(chalk.cyan(`SYSTEM:`) + ` ${result}`);
     } else {
       this.fullMessageHistory.push(
@@ -225,9 +232,9 @@ export class Agent extends Loggable {
     }
   }
 
-  private async talkToAI() {
+  protected async talkToAI() {
     let assistantReply = await withSpinner("Thinking... ", () =>
-      chat_with_ai(
+      chatWithAi(
         this,
         this.systemPrompt,
         this.triggeringPrompt,
@@ -237,7 +244,7 @@ export class Agent extends Loggable {
       )
     ); // TODO: This hardcodes the model to use GPT3.5. Make this an argument
 
-    let assistantReplyJson = fixJsonUsingMultipleTechniques(assistantReply);
+    let assistantReplyJson = await fixJsonUsingMultipleTechniques(assistantReply);
 
     // Print Assistant thoughts
     if (JSON.stringify(assistantReplyJson) !== `{}`) {

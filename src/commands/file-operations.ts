@@ -7,6 +7,7 @@ import * as iconv from "iconv-lite";
 import { CommandDecorator } from "./command";
 import * as path from "path";
 import axios from "axios";
+import { ExecuteShell } from "./run-code";
 
 const CFG = new Config();
 const logger = getLogger("file-operations");
@@ -73,18 +74,18 @@ function is_duplicate_operation(
   return false;
 }
 
-function log_operation(
-  operation: string,
-  filename: string,
-  checksum: string | null = null
-): void {
-  let log_entry = `${operation}: ${filename}`;
-  if (checksum !== null) {
-    log_entry += ` #${checksum}`;
-  }
-  logger.debug(`Logging file operation: ${log_entry}`);
-  AppendToFile.appendToFile(CFG.fileLoggerPath, `${log_entry}\n`, false);
-}
+// function log_operation(
+//   operation: string,
+//   filename: string,
+//   checksum: string | null = null
+// ): void {
+//   let log_entry = `${operation}: ${filename}`;
+//   if (checksum !== null) {
+//     log_entry += ` #${checksum}`;
+//   }
+//   logger.debug(`Logging file operation: ${log_entry}`);
+//   AppendToFile.appendToFile(CFG.fileLoggerPath, `${log_entry}\n`, false);
+// }
 
 function* split_file(
   content: string,
@@ -125,36 +126,36 @@ function readable_file_size(size: number, decimal_places: number = 2): string {
   return `${size.toFixed(decimal_places)} ${units[unitIndex]}`;
 }
 
-@CommandDecorator({
-  name: "readFile",
-  description: "Read File",
-  signature: '"filename": string',
-})
-export class ReadFile {
-  static readFile(filename: string): string {
-    if (filename.includes("<filename>")) {
-      return "Error: Please specify a filename.";
-    }
-    try {
-      const buffer = fs.readFileSync(filename);
-      const encoding = chardet.detect(buffer) ?? "utf-8";
-      const contents = iconv.decode(buffer, encoding);
-      logger.debug(`Read file '${filename}' with encoding '${encoding}'`);
-      return contents;
-    } catch (err) {
-      return `Error: ${err}`;
-    }
-  }
-}
+// @CommandDecorator({
+//   name: "readFile",
+//   description: "Read File",
+//   signature: '"filename": string',
+// })
+// export class ReadFile {
+//   static readFile(filename: string): string {
+//     if (filename.includes("<filename>")) {
+//       return "Error: Please specify a filename.";
+//     }
+//     try {
+//       const buffer = fs.readFileSync(filename);
+//       const encoding = chardet.detect(buffer) ?? "utf-8";
+//       const contents = iconv.decode(buffer, encoding);
+//       logger.debug(`Read file '${filename}' with encoding '${encoding}'`);
+//       return contents;
+//     } catch (err) {
+//       return `Error: ${err}`;
+//     }
+//   }
+// }
 
 @CommandDecorator({
-  name: "writeToFile",
-  description: "Write to File",
+  name: "createFile",
+  description: "Create a File",
   signature: '"filename": string, "text": string',
-  aliases: ["writeFile", 'createFile'],
+  aliases: ["writeFile"],
 })
-export class WriteToFile {
-  static writeToFile(filename: string, text: string): string {
+export class CreateFile {
+  static createFile(filename: string, text: string): string {
     if (filename.includes("<filename>")) {
       return "Error: Please specify a filename.";
     }
@@ -166,11 +167,12 @@ export class WriteToFile {
       return "Error: File has already been updated.";
     }
     try {
+      // filename = path.join(path.dirname(filename), 'scripts', path.basename(filename));
       const directory = path.dirname(filename);
       fs.mkdirSync(directory, { recursive: true });
       fs.writeFileSync(filename, text, "utf-8");
-      log_operation("write", filename, checksum);
-      return "File written successfully.";
+      // log_operation("write", filename, checksum);
+      return `File ${filename} written successfully.`;
     } catch (err) {
       return `Error: ${err}`;
     }
@@ -199,7 +201,7 @@ export class AppendToFile {
       if (should_log) {
         const content = fs.readFileSync(filename, "utf-8");
         const checksum = text_checksum(content);
-        log_operation("append", filename, checksum);
+        // log_operation("append", filename, checksum);
       }
 
       return "Text appended successfully.";
@@ -208,6 +210,21 @@ export class AppendToFile {
     }
   }
 }
+
+// @CommandDecorator({
+//   name: "ls",
+//   description: "List Files",
+//   signature: "",
+// })
+// export class ListFiles {
+//   static ls() {
+//     try {
+//       return ExecuteShell.executeShellCommandLine("ls -la");
+//     } catch (err) {
+//       return `Error: ${err}`;
+//     }
+//   }
+// }
 
 @CommandDecorator({
   name: "downloadFile",

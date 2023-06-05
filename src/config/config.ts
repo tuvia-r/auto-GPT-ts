@@ -5,8 +5,10 @@ import { LogLevel, Loggable, Logger } from "../logging";
 export class Config extends Loggable {
   disabledCommandCategories: string[] = [];
   workspacePath = "./workspace";
-  fileLoggerPath = "./logs/gpt.log";
+  currentWorkspace = "./workspace";
+  fileLoggerPath = "./workspace/logs/gpt.log";
   aiRole = "assistant";
+  treeBasePath = "./workspace/trees";
 
   debugMode = false;
   continuousMode = false;
@@ -36,7 +38,7 @@ export class Config extends Loggable {
   aiSettingsFile = process.env.AI_SETTINGS_FILE ?? "ai_settings.yaml";
   fastLlmModel = process.env.FAST_LLM_MODEL ?? "gpt-3.5-turbo";
   smartLlmModel = process.env.SMART_LLM_MODEL ?? "gpt-4";
-  fastTokenLimit = parseInt(process.env.FAST_TOKEN_LIMIT ?? "3000", 10);
+  fastTokenLimit = parseInt(process.env.FAST_TOKEN_LIMIT ?? "4000", 10);
   smartTokenLimit = parseInt(process.env.SMART_TOKEN_LIMIT ?? "8000", 10);
   browseChunkMaxLength = parseInt(
     process.env.BROWSE_CHUNK_MAX_LENGTH ?? "3000",
@@ -108,6 +110,7 @@ export class Config extends Loggable {
   setDebugMode(value: boolean): void {
     console.log("Setting debug mode to", value);
     Logger.logLevel = value ? LogLevel.DEBUG : LogLevel.INFO;
+    Logger.useTypewriterAffect = !value;
     this.debugMode = value;
   }
 

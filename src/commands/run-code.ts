@@ -16,21 +16,21 @@ const jsVm = new NodeVM({
   console: "inherit",
 });
 
-@CommandDecorator({
-  name: "executeJavascriptFile",
-  description: "Execute Javascript File",
-  signature: '"filename": string',
-})
-export class ExecuteJavascriptFile {
-  static async executeJavascriptFile(filename: string) {
-    try {
-      const res = jsVm.runFile(filename);
-      return res;
-    } catch (err) {
-      return err?.message ?? err;
-    }
-  }
-}
+// @CommandDecorator({
+//   name: "executeJavascriptFile",
+//   description: "Execute Javascript File",
+//   signature: '"filename": string',
+// })
+// export class ExecuteJavascriptFile {
+//   static async executeJavascriptFile(filename: string) {
+//     try {
+//       const res = jsVm.runFile(filename);
+//       return res;
+//     } catch (err) {
+//       return err?.message ?? err;
+//     }
+//   }
+// }
 
 // @CommandDecorator({
 //   name: "executeTypescriptCode",
@@ -50,7 +50,6 @@ export class ExecuteJavascriptFile {
 //   }
 // }
 
-let lastWorkingDir: string;
 
 @CommandDecorator({
   name: "executeShellCommandLine",
@@ -62,35 +61,40 @@ let lastWorkingDir: string;
 export class ExecuteShell {
   static logger = getLogger("ExecuteShell");
   static async executeShellCommandLine(commandLine: string) {
-    if (!lastWorkingDir) {
-      lastWorkingDir = CFG.workspacePath;
+    if (!CFG.currentWorkspace) {
+      CFG.currentWorkspace = CFG.workspacePath;
     }
 
-    let workingDir = lastWorkingDir;
+    let workingDir = CFG.currentWorkspace;
 
     if (!path.relative(workingDir, CFG.workspacePath).startsWith("..")) {
       workingDir = CFG.workspacePath;
     }
 
     this.logger.info(
-      `Executing shell command ${commandLine} in dir ${workingDir}`
+      `Executing shell command "${commandLine}" in dir ${workingDir}`
     );
 
     let stdout = "";
     let stderr = "";
     try {
       await new Promise<void>((resolve, reject) => {
-        const cp = spawn(commandLine + " & echo $PWD", {
+        const cp = spawn(commandLine + "\n echo $PWD", {
           cwd: workingDir,
           stdio: "pipe",
           shell: true,
           detached: true,
         });
+        cp.unref();
         cp.stdout.on("data", (data) => {
           stdout += data.toString();
         });
         cp.stderr.on("data", (data) => {
           stderr += data.toString();
+        });
+        cp.on("error", (err) => {
+          reject(err);
+          cp.kill(0);
         });
         cp.on("close", (code) => {
           if (code === 0) {
@@ -99,19 +103,29 @@ export class ExecuteShell {
             reject(new Error(`Shell command exited with code ${code}`));
           }
         });
-        setTimeout(resolve, 1000 * 60 * 2);
+        setTimeout(resolve, 1000 * 90);
       });
     } catch (error) {
       stderr = error?.stderr ?? error.message ?? error;
     }
 
-    lastWorkingDir = stdout.trim().split("\n").pop() ?? lastWorkingDir;
+    const newLastWorkingDir = stdout.trim().split("\n").pop().trim()
 
-    const output = `STDOUT:\n${stdout
+    if(path.relative(newLastWorkingDir, CFG.workspacePath).startsWith("..") && newLastWorkingDir.startsWith('/')) {
+      CFG.currentWorkspace = newLastWorkingDir;
+    }
+
+    this.logger.info(`Shell command finished in dir: ${CFG.currentWorkspace}`);
+
+    let output = `STDOUT:\n${stdout
       .trim()
       .split("\n")
       .slice(0, -1)
       .join("\n")}\nSTDERR:\n${stderr}`;
+
+    if(output.includes('This command is not available when running the Angular CLI outside a workspace')) {
+      output += ' - looks like you are not inside an angular project, create a new workspace with `ng new <workspace-name>` or cd into an existing workspace.'
+    }
 
     return output;
   }

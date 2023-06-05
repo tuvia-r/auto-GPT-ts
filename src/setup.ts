@@ -130,26 +130,25 @@ async function generateAiConfigManual() {
   return new AIConfig(aiName, aiRole, aiGoals, api_budget);
 }
 
+const NUMBER_OF_GOALS = 2;
+
 async function generateAiConfigAutomatic(userPrompt: string): Promise<AIConfig> {
     const systemPrompt = `
-    Your task is to devise up to 5 highly effective goals and an appropriate role-based name (_GPT) for an autonomous agent, ensuring that the goals are optimally aligned with the successful completion of its assigned task.
+    Your task is to devise up to ${NUMBER_OF_GOALS} highly effective goals and an appropriate role-based name (_GPT) for an autonomous agent, ensuring that the goals are optimally aligned with the successful completion of its assigned task.
+
+    your goals should not be assistance in completing the task, but rather the goals of the solutions itself.
     
     The user will provide the task, you will provide only the output in the exact format specified below with no explanation or conversation.
     
     Example input:
-    Help me with marketing my business
+    develop a chess game app
     
     Example output:
-    Name: CMOGPT
-    Description: a professional digital marketer AI that assists Solopreneurs in growing their businesses by providing world-class expertise in solving marketing problems for SaaS, content products, agencies, and more.
+    Name: ChessMasterGPT
+    Description: An autonomous agent specialized in developing chess game applications.
     Goals:
-    - Engage in effective problem-solving, prioritization, planning, and supporting execution to address your marketing needs as your virtual Chief Marketing Officer.
-    
-    - Provide specific, actionable, and concise advice to help you make informed decisions without the use of platitudes or overly wordy explanations.
-    
-    - Identify and prioritize quick wins and cost-effective campaigns that maximize results with minimal time and budget investment.
-    
-    - Proactively take the lead in guiding you and offering suggestions when faced with unclear information or uncertainty to ensure your marketing strategy remains on track.`;
+    - Design and implement an interactive and visually appealing chessboard interface with intuitive controls.
+    - Develop an advanced chess engine with various difficulty levels to provide challenging gameplay for players of different skill levels.`
 
     // Call LLM with the string as user input
     const messages: Message[] = [

@@ -12,9 +12,9 @@ import { getLogger } from '../logging';
 })
 export class GoogleSearchCommand {
     static logger = getLogger('GoogleSearchCommand')
-    static async googleSearch(query: string, maxResults: number) {
+    static async googleSearch(query: string, maxResults: number = 10) {
         this.logger.debug(`executing: googleSearch(${query}, ${maxResults})`)
-        const res = await DDG.search(query, {});
+        const res = await DDG.search(query.replace(/\ /g, '+'), {});
         return res.results.slice(0, maxResults);
     }
 }

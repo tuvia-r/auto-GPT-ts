@@ -1,4 +1,4 @@
-import { getLogger } from './logging';
+import { getLogger } from "./logging";
 import { Agent } from "./agent/agent";
 import { Config, checkOpenaiApiKey } from "./config/config";
 import { createConfig } from "./configurator";
@@ -10,7 +10,8 @@ import { Workspace } from "./workspace/workspace";
 import { CommandRegistry } from "./commands/command";
 import { constructMainAiConfig } from "./prompt/prompt-base";
 import { getMemory } from "./memory";
-import { Message } from './llm/base';
+import { Message } from "./llm/base";
+import { TreeAgent } from "./agent/tree-agent";
 
 const logger = getLogger("run-auto-gpt");
 
@@ -48,10 +49,8 @@ export async function runAutoGpt(
   );
   checkOpenaiApiKey();
 
-
-
   if (!workspaceDirectory) {
-    workspaceDirectory = Path.resolve(__dirname, "..", "auto_gpt_workspace");
+    workspaceDirectory = Path.resolve(__dirname, "..", cfg.workspacePath);
   } else {
     workspaceDirectory = Path.resolve(workspaceDirectory);
   }
@@ -64,26 +63,21 @@ export async function runAutoGpt(
   //   the workspace directory so we can bind them to the agent.
   workspaceDirectory = Workspace.makeWorkspace(workspaceDirectory);
   cfg.workspacePath = workspaceDirectory;
+  cfg.currentWorkspace = workspaceDirectory;
 
   // HACK: doing this here to collect some globals that depend on the workspace.
   const fileLoggerPath = Path.resolve(workspaceDirectory, "file_logger.txt");
   if (!fs.existsSync(fileLoggerPath)) {
-    fs.writeFileSync(fileLoggerPath, "File Operation Logger ");
+    fs.writeFileSync(fileLoggerPath, "File Operation Logger \n");
   }
 
   cfg.fileLoggerPath = fileLoggerPath;
-
 
   // logger.debug(`config: `, cfg)
 
   const aiName = "";
   const aiConfig = await constructMainAiConfig();
   aiConfig.commandRegistry = commandRegistry;
-
-
-  // Initialize variables
-  const fullMessageHistory: Message[] = [];
-  let nextActionCount = 0;
 
   // Initialize memory and make sure it is empty.
   // this is particularly important for indexing and referencing pinecone memory
@@ -94,7 +88,17 @@ export async function runAutoGpt(
     logger.info("Prompt: " + chalk.green(systemPrompt));
   }
 
-  const agent = new Agent(
+  // Initialize variables
+  const fullMessageHistory: Message[] = (await memory.getAll())
+    .map((m) => {
+      try {
+        return JSON.parse(m);
+      } catch {}
+    })
+    .filter((m) => !!m);
+  let nextActionCount = fullMessageHistory.length;
+
+  const agent = new TreeAgent(
     aiName,
     memory,
     fullMessageHistory,
@@ -107,9 +111,8 @@ export async function runAutoGpt(
   await agent.startInteractionLoop();
 }
 
-
 const importCommands = async (cfg: Config) => {
-    const commandRegistry = new CommandRegistry();
+  const commandRegistry = new CommandRegistry();
 
   const commandCategories = [
     "./analyze-code",
@@ -139,4 +142,4 @@ const importCommands = async (cfg: Config) => {
   }
 
   return commandRegistry;
-}
+};

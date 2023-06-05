@@ -14,7 +14,6 @@ const JSON_SCHEMA = `
     },
     "thoughts":
     {
-        "text": "thought",
         "reasoning": "reasoning",
         "plan": "- short bulleted\n- list that conveys\n- long-term plan",
         "criticism": "constructive self-criticism",
@@ -57,7 +56,7 @@ async function autoFixJson(jsonString: string, schema: string): Promise<string> 
 }
 
 
-export function fixJsonUsingMultipleTechniques(assistantReply: string): Record<string, any> {
+export async function fixJsonUsingMultipleTechniques(assistantReply: string, schema = JSON_SCHEMA): Promise<Record<string, any>> {
     assistantReply = assistantReply.trim();
     if (assistantReply.startsWith("```json")) {
       assistantReply = assistantReply.slice(7);
@@ -69,6 +68,7 @@ export function fixJsonUsingMultipleTechniques(assistantReply: string): Record<s
     try {
       return JSON.parse(assistantReply);
     } catch (error) {
+      logger.debug("Failed to parse JSON:", error);
       // pass
     }
   
@@ -79,11 +79,12 @@ export function fixJsonUsingMultipleTechniques(assistantReply: string): Record<s
     try {
       return JSON.parse(assistantReply);
     } catch (error) {
+      logger.debug("Failed to parse JSON:", error);
       // pass
     }
   
     // Parse and print Assistant response
-    let assistantReplyJson = fixAndParseJson(assistantReply);
+    let assistantReplyJson = await fixAndParseJson(assistantReply, true, schema);
     logger.debug("Assistant reply JSON:", assistantReplyJson);
     if (assistantReplyJson == null || Object.keys(assistantReplyJson).length === 0) {
       assistantReplyJson = attempt_to_fix_json_by_finding_outermost_brackets(assistantReply);
@@ -102,7 +103,7 @@ export function fixJsonUsingMultipleTechniques(assistantReply: string): Record<s
   }
   
 
-  function fixAndParseJson(jsonToLoad: string, tryToFixWithGpt: boolean = true): Record<string, any> {
+  function fixAndParseJson(jsonToLoad: string, tryToFixWithGpt: boolean = true, schema = JSON_SCHEMA): Record<string, any> {
     try {
       return JSON.parse(jsonToLoad.replace(/\t/g, ''));
     } catch (error) {}
@@ -121,7 +122,7 @@ export function fixJsonUsingMultipleTechniques(assistantReply: string): Record<s
       return JSON.parse(maybeFixedJson);
     } catch (error) {
       if (tryToFixWithGpt) {
-        return try_ai_fix(true, error, jsonToLoad);
+        return try_ai_fix(true, error, jsonToLoad, schema);
       } else {
         return {};
       }
@@ -132,7 +133,8 @@ export function fixJsonUsingMultipleTechniques(assistantReply: string): Record<s
   async function try_ai_fix(
     try_to_fix_with_gpt: boolean,
     exception: Error,
-    json_to_load: string
+    json_to_load: string,
+    schema: string = JSON_SCHEMA
   ): Promise<Record<string, unknown>> {
     if (!try_to_fix_with_gpt) {
       throw exception;
@@ -147,7 +149,7 @@ export function fixJsonUsingMultipleTechniques(assistantReply: string): Record<s
     }
   
     // Now try to fix this up using the ai_functions
-    const ai_fixed_json = await autoFixJson(json_to_load, JSON_SCHEMA);
+    const ai_fixed_json = await autoFixJson(json_to_load, schema);
   
     if (ai_fixed_json !== 'failed') {
       return JSON.parse(ai_fixed_json);

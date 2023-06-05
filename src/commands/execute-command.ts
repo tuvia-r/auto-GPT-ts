@@ -1,12 +1,13 @@
 import { isObject } from "mathjs";
 import { CommandRegistry } from "./command";
+import { withSpinner } from "../spinner";
 
 export function getCommand(responseJson: {
   [key: string]: any;
 }) {
   try {
     if (!responseJson.hasOwnProperty("command")) {
-      throw `Error: Missing 'command' object in JSON`;
+      throw `Error: Missing 'command' object in JSON, JSON: ${JSON.stringify(responseJson)}`;
     }
 
     const command = responseJson["command"];
@@ -39,7 +40,7 @@ export async function executeCommand(
     const commandRegistry = new CommandRegistry();
     const command = commandRegistry.getCommand(commandName);
     if (command) {
-      return await command.call(...Object.values(args));
+      return await withSpinner('Executing Command ' + commandName + '...' , () => command.call(...Object.values(args)));
     }
     return (
       `Unknown command '${commandName}'. Please refer to the 'COMMANDS'` +

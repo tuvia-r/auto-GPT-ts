@@ -25,8 +25,7 @@ export class PromptGenerator extends Loggable {
   role = "ai";
   private responseFormat = {
     thoughts: {
-      text: "thought",
-      reasoning: "reasoning",
+      reasoning: "reasoning of thoughts",
       plan: "- short bulleted\n- list that conveys\n- long-term plan",
       criticism: "constructive self-criticism",
       speak: "thoughts summary to say to user",
@@ -191,7 +190,7 @@ Continue (${CFG.authoriseKey}/${CFG.exitKey}) `);
   // Role
   logger.info("Role: " + chalk.green(config.aiRole));
   // Goals
-  logger.info(`Goals: \n${config.aiGoals.map((goal) => "- " + chalk.green(goal)).join("\n")}`);
+  logger.info(`Goals: \n${config.aiGoals.map((goal) => "    - " + chalk.green(goal)).join("\n")}`);
 
   return config;
 }

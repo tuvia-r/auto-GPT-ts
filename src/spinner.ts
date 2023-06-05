@@ -7,13 +7,15 @@ export async function withSpinner<T>(message: string, callback: () => Promise<T>
       const spinner = ora({ text: message }).start();
       try {
         let res = await callback();
-        spinner.succeed();
-        spinner.clear();
         return res;
   
       } catch (error) {
-        spinner.fail();
         throw error;
+      }
+      finally {
+        spinner.stop();
+        spinner.clear();
+        await new Promise(resolve => setTimeout(resolve, 10));
       }
     })
   }

@@ -35,5 +35,8 @@ export abstract class MemoryProvider {
      * @returns Statistics from memory
      */
     abstract getStats(): any;
+
+
+    abstract getAll(): string[] | Promise<string[]>;
   }
   

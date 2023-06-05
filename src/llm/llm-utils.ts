@@ -3,6 +3,7 @@ import { Configuration, CreateChatCompletionResponse, OpenAIApi } from "openai";
 import { ApiManager } from "./api-manages";
 import { Message } from "./base";
 import { Config } from "../config/config";
+import { countMessageTokens } from './token-counter';
 
 const configuration = new Configuration({
   apiKey: new Config().openaiApiKey,
@@ -135,6 +136,7 @@ export async function createChatCompletion(
       logger.debug(`Error: createChatCompletion returned: `, {error, messages});
       if (/400/.test(error.message)) {
         // TODO: find rate limit error status code
+        logger.error(`Error: got status code 400 from API.`, error);
         if (!warned_user) {
           logger.warn(
             `Please double check that you have setup a PAID OpenAI API Account. You can read more here: https://significant-gravitas.github.io/Auto-GPT/setup/#getting-an-api-key`
@@ -198,11 +200,11 @@ class LlmUtils {
   /** warped in class for decorating
    */
   @RetryOpenaiApi()
-  static async createEmbedding(text: string, ..._: any[]) {
+  static async createEmbedding(text: string, ...params: any[]) {
     const res = await openai.createEmbedding({
       input: [text],
       model: "text-embedding-ada-002",
-      ..._, // Pass any additional arguments to the API call
+      ...params, // Pass any additional arguments to the API call
     });
     return res.data;
   }
